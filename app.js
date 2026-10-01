@@ -276,7 +276,7 @@ $('plateBtns').addEventListener('click', e => {
   if (!b || b.disabled) return;
   const w = parseFloat(b.dataset.w);
   if (usedOf(w) >= limitOf(w)) return;
-  setSide([...side(), w]);
+  setSide([...side(), w].sort((a, b) => b - a));   // heaviest plates go on first (inside)
   buzz(); render();
 });
 
