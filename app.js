@@ -205,8 +205,7 @@ function renderControls() {
   $('pctRow').hidden = !state.pctOn;
   const preset = [...document.querySelectorAll('#pctRow [data-p]')];
   preset.forEach(b => b.classList.toggle('on', +b.dataset.p === state.pct));
-  $('pctCustom').classList.toggle('on', !preset.some(b => +b.dataset.p === state.pct));
-  if (document.activeElement !== $('pctInput')) $('pctInput').value = state.pct;
+  $('pctVal').textContent = fmt(state.pct) + '%';
   if (document.activeElement !== $('target')) $('target').value = state.target[u];
   const step = u === 'kg' ? 2.5 : 5;
   $('minus').textContent = `−${step}`;
@@ -235,19 +234,27 @@ function plateBtnHTML(w, badge, extra = '') {
 function renderResult() {
   const r = solveTarget();
   const el = $('result');
+  const inexact = !r.error && Math.abs(r.diff) > 1e-9;
+  // ×% mode: computed weight (and what can actually be loaded) next to the % stepper
+  $('pctWeight').textContent = r.error ? '—' : `${fmt(Math.round(r.target * 100) / 100)} ${U()}`;
+  $('pctActual').textContent = inexact ? `實際 ${fmt(r.total)} ${U()}` : '';
   if (r.error) { el.innerHTML = `<span class="${state.target[U()] === '' ? '' : 'err'}">${r.error}</span>`; $('apply').disabled = true; return; }
   const ex = state.exclude[U()];
   const used = plates().filter(w => r.plates.includes(w));
   const off = plates().filter(w => ex.includes(w));
   let html = '';
-  if (Math.abs(r.diff) > 1e-9 || ex.length) {
-    html += `<div class="rhead">${Math.abs(r.diff) > 1e-9 ? `<span class="warn">最接近 ${fmt(r.total)} ${U()}（差 ${fmt(r.diff)}）</span>` : '<span></span>'}` +
-      `${ex.length ? '<button class="restore" id="restoreAll">全部恢復</button>' : ''}</div>`;
-  }
+  const warn = inexact && !state.pctOn;   // in ×% mode the stepper row already shows it
+  if (warn) html += `<div class="rhead"><span class="warn">最接近 ${fmt(r.total)} ${U()}（差 ${fmt(r.diff)}）</span></div>`;
   if (!used.length && !off.length) html += '<div class="empty-bar">只要空槓</div>';
-  else html += `<div class="rplates" style="grid-template-columns:repeat(${Math.ceil(plates().length / 2)}, 1fr)">` +
+  else {
+    // keep it to one row when possible (saves height on small phones); wrap only when crowded
+    const n = used.length + off.length + (ex.length ? 1 : 0);
+    const cols = n > 7 ? Math.ceil(n / 2) : Math.max(5, n);
+    html += `<div class="rplates" style="grid-template-columns:repeat(${cols}, 1fr)">` +
     used.map(w => plateBtnHTML(w, r.plates.filter(x => x === w).length)).join('') +
-    off.map(w => plateBtnHTML(w, '✕', 'off')).join('') + '</div>';
+    off.map(w => plateBtnHTML(w, '✕', 'off')).join('') +
+    (ex.length ? '<button class="restore" id="restoreAll">全部<br>恢復</button>' : '') + '</div>';
+  }
   el.innerHTML = html;
   $('apply').disabled = false;
 }
@@ -330,7 +337,11 @@ $('pctRow').addEventListener('click', e => {
   const b = e.target.closest('[data-p]');
   if (b) { state.pct = +b.dataset.p; buzz(); render(); }
 });
-$('pctInput').addEventListener('input', e => { state.pct = parseFloat(e.target.value) || 0; render(); });
+document.querySelectorAll('.pct-step').forEach(b => b.addEventListener('click', () => {
+  const p = Math.round((state.pct + +b.dataset.d * 2.5) * 10) / 10;
+  state.pct = Math.min(150, Math.max(5, p));
+  buzz(); render();
+}));
 $('target').addEventListener('keydown', e => { if (e.key === 'Enter') { e.target.blur(); $('apply').click(); } });
 function nudge(d) {
   const step = U() === 'kg' ? 2.5 : 5;

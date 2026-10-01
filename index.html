@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="style.css?v=20261001-1616">
+<link rel="stylesheet" href="style.css?v=20261001-1630">
 </head>
 <body>
 <div class="shell">
@@ -71,16 +71,21 @@
         <button class="step pct-toggle" id="pctToggle" aria-label="乘上百分比">×%</button>
       </div>
       <div class="pct-row" id="pctRow" hidden>
-        <button data-p="60">60</button>
-        <button data-p="70">70</button>
-        <button data-p="75">75</button>
-        <button data-p="80">80</button>
-        <button data-p="85">85</button>
-        <button data-p="90">90</button>
-        <label class="pct-custom" id="pctCustom">
-          <input id="pctInput" type="number" inputmode="decimal" min="0" max="200">
-          <span>%</span>
-        </label>
+        <div class="pct-presets">
+          <button data-p="60">60</button>
+          <button data-p="65">65</button>
+          <button data-p="70">70</button>
+          <button data-p="75">75</button>
+          <button data-p="80">80</button>
+          <button data-p="85">85</button>
+          <button data-p="90">90</button>
+        </div>
+        <div class="pct-adjust">
+          <button class="pct-step" data-d="-1" aria-label="減少 2.5%">−</button>
+          <output id="pctVal">80%</output>
+          <button class="pct-step" data-d="1" aria-label="增加 2.5%">+</button>
+          <div class="pct-out"><b id="pctWeight">—</b><small id="pctActual"></small></div>
+        </div>
       </div>
       <div class="result" id="result"></div>
       <button class="btn primary" id="apply">放到槓上</button>
@@ -192,8 +197,8 @@
 
 </div>
 
-<script src="app.js?v=20261001-1616"></script>
-<script src="log.js?v=20261001-1616"></script>
-<script src="update.js?v=20261001-1616"></script>
+<script src="app.js?v=20261001-1630"></script>
+<script src="log.js?v=20261001-1630"></script>
+<script src="update.js?v=20261001-1630"></script>
 </body>
 </html>
