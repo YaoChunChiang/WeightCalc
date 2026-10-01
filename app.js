@@ -202,8 +202,12 @@ function renderControls() {
   $('targetUnit').textContent = u;
   $('target').placeholder = state.pctOn ? '最大重量' : '目標總重';
   $('pctToggle').classList.toggle('on', state.pctOn);
-  $('pctRow').hidden = !state.pctOn;
-  const preset = [...document.querySelectorAll('#pctRow [data-p]')];
+  // ×% mode turns the input row into "max × pct% = weight"; the % is picked in #pctSheet
+  $('minus').hidden = $('plus').hidden = state.pctOn;
+  $('pctBtn').hidden = $('pctEq').hidden = $('pctOut').hidden = !state.pctOn;
+  $('pctBtn').textContent = `×${fmt(state.pct)}%`;
+  document.querySelector('#tab-solve .target').classList.toggle('pct', state.pctOn);
+  const preset = [...document.querySelectorAll('#pctSheet [data-p]')];
   preset.forEach(b => b.classList.toggle('on', +b.dataset.p === state.pct));
   $('pctVal').textContent = fmt(state.pct) + '%';
   if (document.activeElement !== $('target')) $('target').value = state.target[u];
@@ -236,8 +240,9 @@ function renderResult() {
   const el = $('result');
   const inexact = !r.error && Math.abs(r.diff) > 1e-9;
   // ×% mode: computed weight (and what can actually be loaded) next to the % stepper
-  $('pctWeight').textContent = r.error ? '—' : `${fmt(Math.round(r.target * 100) / 100)} ${U()}`;
-  $('pctActual').textContent = inexact ? `實際 ${fmt(r.total)} ${U()}` : '';
+  $('pctWeight').textContent = r.error ? '—' : fmt(Math.round(r.target * 100) / 100);
+  $('pctActual').textContent = inexact ? `實際 ${fmt(r.total)}` : '';
+  $('pctSheetCalc').textContent = r.error ? '' : `${fmt(r.base)} × ${fmt(state.pct)}% = ${fmt(Math.round(r.target * 100) / 100)} ${U()}`;
   if (r.error) { el.innerHTML = `<span class="${state.target[U()] === '' ? '' : 'err'}">${r.error}</span>`; $('apply').disabled = true; return; }
   const ex = state.exclude[U()];
   const used = plates().filter(w => r.plates.includes(w));
@@ -333,9 +338,11 @@ $('clear').addEventListener('click', () => { setSide([]); buzz(); render(); });
 
 $('target').addEventListener('input', e => { state.target[U()] = e.target.value; render(); });
 $('pctToggle').addEventListener('click', () => { state.pctOn = !state.pctOn; buzz(); render(); });
-$('pctRow').addEventListener('click', e => {
+$('pctBtn').addEventListener('click', () => showSheet($('pctSheet'), true));
+$('pctDone').addEventListener('click', () => showSheet(null, false));
+$('pctSheet').addEventListener('click', e => {
   const b = e.target.closest('[data-p]');
-  if (b) { state.pct = +b.dataset.p; buzz(); render(); }
+  if (b) { state.pct = +b.dataset.p; buzz(); render(); showSheet(null, false); }
 });
 document.querySelectorAll('.pct-step').forEach(b => b.addEventListener('click', () => {
   const p = Math.round((state.pct + +b.dataset.d * 2.5) * 10) / 10;
