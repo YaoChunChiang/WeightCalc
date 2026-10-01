@@ -1,6 +1,8 @@
-/* Real usable height -> --app-h.
-   iOS home-screen apps (standalone) often report 100vh / 100dvh / fixed-bottom against a viewport
-   that is shorter than the screen, leaving an empty strip under the tab bar. Loaded in <head>. */
+/* Real usable height -> --app-h, plus --vp-gap.
+   iOS home-screen apps (standalone, black-translucent status bar) get a viewport that is shorter
+   than the screen by the status-bar height (iPhone 15 Pro: innerHeight 793 vs screen 852).
+   Content can't be drawn in that bottom strip, but the strip already covers the home indicator,
+   so the tab bar's safe-area padding is reduced by --vp-gap. Loaded in <head>. */
 
 (function () {
   const root = document.documentElement;
@@ -9,15 +11,16 @@
   if (standalone) root.classList.add('standalone');
 
   function measure() {
-    let h = window.innerHeight;
+    const h = window.innerHeight;
+    let gap = 0;
     if (standalone && window.screen) {
-      // A standalone app always fills the screen; trust screen size when the gap looks like the bug
-      // (not e.g. iPad split view, where the window is genuinely smaller).
-      const portrait = window.innerHeight >= window.innerWidth;
+      const portrait = h >= window.innerWidth;
       const full = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
-      if (full > h && full - h < 150) h = full;
+      // only the bug-sized gap (not e.g. iPad split view, where the window is genuinely smaller)
+      if (full > h && full - h < 150) gap = full - h;
     }
     root.style.setProperty('--app-h', h + 'px');
+    root.style.setProperty('--vp-gap', gap + 'px');
     return h;
   }
 
@@ -48,6 +51,8 @@
       'screen': `${screen.width}×${screen.height}`,
       'visualViewport.height': window.visualViewport ? Math.round(visualViewport.height) : '-',
       '--app-h': root.style.getPropertyValue('--app-h'),
+      '--vp-gap': root.style.getPropertyValue('--vp-gap'),
+      'tab bar padding-bottom': getComputedStyle(document.getElementById('tabbar')).paddingBottom,
       'safe-area top/bottom': `${cs.paddingTop} / ${cs.paddingBottom}`,
       'shell height': Math.round(document.querySelector('.shell').getBoundingClientRect().height) + 'px',
       'devicePixelRatio': window.devicePixelRatio,

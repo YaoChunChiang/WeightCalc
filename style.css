@@ -15,9 +15,11 @@
   --tab-pb: env(safe-area-inset-bottom);
 }
 /* home-screen app: no browser toolbar, so keep only what the home indicator needs */
-.standalone { --tab-pb: max(calc(env(safe-area-inset-bottom) - 10px), 8px); }
+.standalone { --tab-pb: max(calc(env(safe-area-inset-bottom) - 10px - var(--vp-gap, 0px)), 4px); }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; }
+/* also paints the strip iOS leaves below the viewport in home-screen mode, so it blends with the tab bar */
+html { background: var(--bg); }
 body {
   background: var(--bg);
   color: var(--text);
