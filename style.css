@@ -15,6 +15,7 @@
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; }
+html { touch-action: manipulation; }   /* no double-tap zoom */
 body {
   background: var(--bg);
   color: var(--text);
@@ -26,9 +27,17 @@ body {
 button, input { font: inherit; color: inherit; }
 button { cursor: pointer; border: 0; background: none; }
 
-html, body { overflow: hidden; }
+/* overflow only on html (propagates to the viewport); hidden on body would clip the 100lvh frame below */
+html { overflow: hidden; }
 /* full-screen frame pinned to the top with an explicit height (more reliable on iOS than vh or bottom:0) */
 .shell { position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+/* iOS 26 home-screen app (black-translucent): 100%/dvh/svh come up short by the status bar (~59px),
+   only 100lvh is the full screen. Browser tabs keep 100dvh. */
+@media (display-mode: standalone) {
+  :root { --u: 1lvh; }
+  html { height: 100lvh; }
+  .shell { height: 100lvh; }
+}
 /* each page fills the frame above the tab bar; content shrinks to fit instead of scrolling */
 .app {
   width: 100%; max-width: 480px; margin: 0 auto; flex: 1; min-height: 0;

@@ -59,6 +59,11 @@ const $ = id => document.getElementById(id);
 const fmt = n => String(Math.round(n * 1000) / 1000);
 const buzz = () => { try { navigator.vibrate && navigator.vibrate(8); } catch (e) {} };
 
+// no pinch zoom: iOS Safari ignores user-scalable=no, so block its gesture events and multi-touch moves
+['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
+  document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+
 const U = () => state.unit;
 const plates = () => PLATES[U()];
 const side = () => state.side[U()];
