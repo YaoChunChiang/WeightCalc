@@ -252,10 +252,8 @@ function renderResult() {
   if (warn) html += `<div class="rhead"><span class="warn">最接近 ${fmt(r.total)} ${U()}（差 ${fmt(r.diff)}）</span></div>`;
   if (!used.length && !off.length) html += '<div class="empty-bar">只要空槓</div>';
   else {
-    // keep it to one row when possible (saves height on small phones); wrap only when crowded
-    const n = used.length + off.length + (ex.length ? 1 : 0);
-    const cols = n > 7 ? Math.ceil(n / 2) : Math.max(5, n);
-    html += `<div class="rplates" style="grid-template-columns:repeat(${cols}, 1fr)">` +
+    // always 5 per row, so plates keep the same (small) size however many there are
+    html += '<div class="rplates">' +
     used.map(w => plateBtnHTML(w, r.plates.filter(x => x === w).length)).join('') +
     off.map(w => plateBtnHTML(w, '✕', 'off')).join('') +
     (ex.length ? '<button class="restore" id="restoreAll">全部<br>恢復</button>' : '') + '</div>';
@@ -342,7 +340,7 @@ $('pctBtn').addEventListener('click', () => showSheet($('pctSheet'), true));
 $('pctDone').addEventListener('click', () => showSheet(null, false));
 $('pctSheet').addEventListener('click', e => {
   const b = e.target.closest('[data-p]');
-  if (b) { state.pct = +b.dataset.p; buzz(); render(); showSheet(null, false); }
+  if (b) { state.pct = +b.dataset.p; buzz(); render(); }   // stays open; closed by 完成 or the backdrop
 });
 document.querySelectorAll('.pct-step').forEach(b => b.addEventListener('click', () => {
   const p = Math.round((state.pct + +b.dataset.d * 2.5) * 10) / 10;
