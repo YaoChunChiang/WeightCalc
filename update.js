@@ -2,7 +2,7 @@
    Compare the running version with version.json and reload once when a newer one is live.
    Version strings are rewritten by bump-version.sh — don't edit by hand. */
 
-const APP_VERSION = '20261001-1144';
+const APP_VERSION = '20261001-1149';
 const RELOADED_KEY = 'reloaded-for-version';
 
 async function checkForUpdate() {
