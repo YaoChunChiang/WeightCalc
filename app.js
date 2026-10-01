@@ -37,6 +37,7 @@ const defaults = () => ({
   target: { kg: '', lb: '' },
   pctOn: false,                     // solve tab: target = entered weight × pct%
   pct: 80,
+  exclude: { kg: [], lb: [] },      // solve tab: plate weights the user doesn't want to use
 });
 let state = load();
 let history = [];
@@ -96,7 +97,8 @@ function solve(perSide) {
   const T = Math.floor(perSide * Q + 1e-6);
   const items = plates().map(w => {
     const u = Math.round(w * Q);
-    return { w, u, max: Math.min(limitOf(w), Math.floor(T / u)) };
+    const off = state.exclude[U()].includes(w);
+    return { w, u, max: off ? 0 : Math.min(limitOf(w), Math.floor(T / u)) };
   });
   const reach = new Uint8Array(T + 1);
   reach[0] = 1;
@@ -216,26 +218,37 @@ function renderControls() {
 
   $('plateBtns').style.gridTemplateColumns = `repeat(${Math.ceil(plates().length / 2)}, 1fr)`;
   $('plateBtns').innerHTML = plates().map(w => {
-    const s = STYLE[u][w], lim = limitOf(w), left = lim - usedOf(w);
-    const badge = lim === Infinity ? '' : `<span class="left">${left}</span>`;
-    return `<button class="pbtn ${s.light ? 'light' : ''}" data-w="${w}" style="background:${s.c};color:${s.light ? '#1b1e25' : '#fff'}" ${left <= 0 ? 'disabled' : ''}><span class="lbl">${fmt(w)}</span>${badge}</button>`;
+    const lim = limitOf(w), left = lim - usedOf(w);
+    return plateBtnHTML(w, lim === Infinity ? null : left, left <= 0 ? 'disabled' : '');
   }).join('');
   $('undo').disabled = !history.length;
   $('clear').disabled = !side().length;
+}
+
+// round plate button, shared by the manual picker and the solve result
+function plateBtnHTML(w, badge, extra = '') {
+  const s = STYLE[U()][w];
+  return `<button class="pbtn ${s.light ? 'light' : ''} ${extra}" data-w="${w}" style="background:${s.c};color:${s.light ? '#1b1e25' : '#fff'}" ${extra.includes('disabled') ? 'disabled' : ''}>` +
+    `<span class="lbl">${fmt(w)}</span>${badge == null ? '' : `<span class="left">${badge}</span>`}</button>`;
 }
 
 function renderResult() {
   const r = solveTarget();
   const el = $('result');
   if (r.error) { el.innerHTML = `<span class="${state.target[U()] === '' ? '' : 'err'}">${r.error}</span>`; $('apply').disabled = true; return; }
-  const list = r.plates.length
-    ? `<div class="list">${r.plates.map(w => `<span class="chip">${chipHTML(w)}</span>`).join('')}</div>`
-    : '';
-  const head = Math.abs(r.diff) < 1e-9
-    ? `<span class="ok">✓ 單邊放 ${fmt(r.perSide)} ${U()}</span>${r.plates.length ? '' : '（只要空槓）'}`
-    : `<span class="warn">最接近 ${fmt(r.total)} ${U()}（差 ${fmt(r.diff)}）</span>・單邊 ${fmt(r.perSide)}`;
-  const calc = state.pctOn ? `<div class="calc">${fmt(r.base)} × ${fmt(state.pct)}% = <b>${fmt(Math.round(r.target * 100) / 100)} ${U()}</b></div>` : '';
-  el.innerHTML = calc + head + list;
+  const ex = state.exclude[U()];
+  const used = plates().filter(w => r.plates.includes(w));
+  const off = plates().filter(w => ex.includes(w));
+  let html = '';
+  if (Math.abs(r.diff) > 1e-9 || ex.length) {
+    html += `<div class="rhead">${Math.abs(r.diff) > 1e-9 ? `<span class="warn">最接近 ${fmt(r.total)} ${U()}（差 ${fmt(r.diff)}）</span>` : '<span></span>'}` +
+      `${ex.length ? '<button class="restore" id="restoreAll">全部恢復</button>' : ''}</div>`;
+  }
+  if (!used.length && !off.length) html += '<div class="empty-bar">只要空槓</div>';
+  else html += `<div class="rplates" style="grid-template-columns:repeat(${Math.ceil(plates().length / 2)}, 1fr)">` +
+    used.map(w => plateBtnHTML(w, r.plates.filter(x => x === w).length)).join('') +
+    off.map(w => plateBtnHTML(w, '✕', 'off')).join('') + '</div>';
+  el.innerHTML = html;
   $('apply').disabled = false;
 }
 
@@ -328,6 +341,16 @@ function nudge(d) {
 }
 $('minus').addEventListener('click', () => nudge(-1));
 $('plus').addEventListener('click', () => nudge(1));
+// tap a plate in the result to stop using it (tap again to allow it); the solver re-plans without it
+$('result').addEventListener('click', e => {
+  const ex = state.exclude[U()];
+  if (e.target.closest('#restoreAll')) { ex.length = 0; buzz(); render(); return; }
+  const b = e.target.closest('[data-w]');
+  if (!b) return;
+  const w = parseFloat(b.dataset.w), i = ex.indexOf(w);
+  i >= 0 ? ex.splice(i, 1) : ex.push(w);
+  buzz(); render();
+});
 $('apply').addEventListener('click', () => {
   const r = solveTarget();
   if (r.error) return;
