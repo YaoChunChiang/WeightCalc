@@ -25,6 +25,9 @@ body {
   -webkit-user-select: none; user-select: none;
 }
 button, input { font: inherit; color: inherit; }
+/* no spinner arrows on number inputs: they eat the space of narrow fields */
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 button { cursor: pointer; border: 0; background: none; }
 
 /* overflow only on html (propagates to the viewport); hidden on body would clip the 100lvh frame below */
@@ -54,7 +57,7 @@ header h1 { font-size: 18px; margin: 0; flex: 1; min-width: 0; letter-spacing: .
 .text-btn { flex: none; height: 40px; padding: 0 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); font-size: 14px; font-weight: 600; white-space: nowrap; }
 .text-btn:active { background: var(--card-2); }
 .seg { display: inline-flex; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
-.seg button { min-width: 44px; height: 34px; padding: 0 12px; border-radius: 999px; color: var(--muted); font-weight: 600; }
+.seg button { min-width: 40px; height: 34px; padding: 0 10px; border-radius: 999px; color: var(--muted); font-weight: 600; }
 .seg button.on { background: var(--accent); color: var(--accent-ink); }
 .icon-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); display: grid; place-items: center; }
 .icon-btn svg { width: 22px; height: 22px; }
@@ -111,17 +114,28 @@ header h1 { font-size: 18px; margin: 0; flex: 1; min-width: 0; letter-spacing: .
 .btn.primary { background: var(--accent); color: var(--accent-ink); }
 .btn.danger { color: var(--danger); }
 
-.target { display: flex; gap: 8px; align-items: stretch; }
-.target .step { width: 54px; height: 56px; border-radius: 12px; background: var(--card-2); font-weight: 700; font-size: 14px; }
-.target .field { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 0 10px; }
+.target { display: flex; gap: 6px; align-items: stretch; }
+.target .step { width: 48px; flex: none; height: clamp(44px, calc(var(--u) * 6.6), 56px); border-radius: 12px; background: var(--card-2); font-weight: 700; font-size: 14px; }
+.target .field { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 0 10px; }
 .target .field:focus-within { border-color: var(--accent); }
-.target input { width: 100%; min-width: 0; background: transparent; border: 0; outline: 0; text-align: center; font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; }
+.target input { width: 100%; min-width: 0; background: transparent; border: 0; outline: 0; text-align: center; font-size: clamp(22px, calc(var(--u) * 3.3), 28px); font-weight: 800; font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; }
 .target .field span { color: var(--muted); }
-.result { min-height: 64px; background: var(--bg); border-radius: 12px; padding: 10px 12px; font-size: 14px; line-height: 1.5; }
+.pct-toggle.on { background: #2a2410; color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.pct-row { display: grid; grid-template-columns: repeat(6, 1fr) 1.6fr; gap: 5px; margin-top: clamp(6px, calc(var(--u) * 1.2), 10px); }
+.pct-row button, .pct-custom { height: 36px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); font-weight: 700; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pct-row button.on, .pct-custom.on { border-color: var(--accent); color: var(--accent); background: #2a2410; }
+.pct-custom { display: flex; align-items: center; justify-content: center; gap: 2px; padding: 0 6px; }
+.pct-custom input { width: 100%; min-width: 0; background: transparent; border: 0; outline: 0; text-align: right; font-weight: 700; color: inherit; -webkit-user-select: text; user-select: text; }
+.pct-custom:focus-within { border-color: var(--accent); }
+.result .calc { color: var(--muted); font-size: 13px; }
+.result .calc b { color: var(--text); }
+#tab-solve .result, #apply { margin-top: clamp(6px, calc(var(--u) * 1.2), 12px); }
+#apply { width: 100%; height: clamp(40px, calc(var(--u) * 5.5), 46px); }
+.result { min-height: 56px; background: var(--bg); border-radius: 12px; padding: clamp(6px, calc(var(--u) * 1.2), 10px) 12px; font-size: 14px; line-height: 1.5; }
 .result .ok { color: #4ade80; }
 .result .warn { color: var(--accent); }
 .result .err { color: var(--danger); }
-.result .list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.result .list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 
 /* sheet */
 .scrim { position: absolute; inset: 0; background: rgba(0,0,0,.55); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 10; }

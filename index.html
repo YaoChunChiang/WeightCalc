@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="style.css?v=20261001-1500">
+<link rel="stylesheet" href="style.css?v=20261001-1555">
 </head>
 <body>
 <div class="shell">
@@ -68,9 +68,22 @@
           <span id="targetUnit">kg</span>
         </label>
         <button class="step" id="plus"></button>
+        <button class="step pct-toggle" id="pctToggle" aria-label="乘上百分比">×%</button>
       </div>
-      <div class="result" id="result" style="margin-top:12px"></div>
-      <button class="btn primary" id="apply" style="width:100%;margin-top:12px">放到槓上</button>
+      <div class="pct-row" id="pctRow" hidden>
+        <button data-p="60">60</button>
+        <button data-p="70">70</button>
+        <button data-p="75">75</button>
+        <button data-p="80">80</button>
+        <button data-p="85">85</button>
+        <button data-p="90">90</button>
+        <label class="pct-custom" id="pctCustom">
+          <input id="pctInput" type="number" inputmode="decimal" min="0" max="200">
+          <span>%</span>
+        </label>
+      </div>
+      <div class="result" id="result"></div>
+      <button class="btn primary" id="apply">放到槓上</button>
     </div>
   </section>
 </main>
@@ -179,8 +192,8 @@
 
 </div>
 
-<script src="app.js?v=20261001-1500"></script>
-<script src="log.js?v=20261001-1500"></script>
-<script src="update.js?v=20261001-1500"></script>
+<script src="app.js?v=20261001-1555"></script>
+<script src="log.js?v=20261001-1555"></script>
+<script src="update.js?v=20261001-1555"></script>
 </body>
 </html>

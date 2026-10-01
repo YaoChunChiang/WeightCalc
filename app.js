@@ -35,6 +35,8 @@ const defaults = () => ({
   side: { kg: [], lb: [] },
   inv: { kg: {}, lb: {} },          // weight -> pairs (missing = unlimited)
   target: { kg: '', lb: '' },
+  pctOn: false,                     // solve tab: target = entered weight × pct%
+  pct: 80,
 });
 let state = load();
 let history = [];
@@ -122,13 +124,15 @@ function solve(perSide) {
 }
 
 function solveTarget() {
-  const target = parseFloat(state.target[U()]);
+  const base = parseFloat(state.target[U()]);
   const bar = barWeight();
-  if (!isFinite(target)) return { error: '輸入想要的總重量' };
+  if (!isFinite(base)) return { error: state.pctOn ? '輸入最大重量' : '輸入想要的總重量' };
+  if (state.pctOn && !(state.pct > 0)) return { error: '輸入百分比' };
+  const target = state.pctOn ? base * state.pct / 100 : base;
   if (target < bar) return { error: `目標比槓重 (${fmt(bar)}) 還輕` };
   const r = solve((target - bar) / 2);
   const total = bar + r.perSide * 2;
-  return { ...r, total, diff: target - total };
+  return { ...r, base, target, total, diff: target - total };
 }
 
 /* ---------- rendering ---------- */
@@ -194,6 +198,13 @@ function renderControls() {
   if (document.activeElement !== $('customBar')) $('customBar').value = state.customBar[u];
   $('customUnit').textContent = u;
   $('targetUnit').textContent = u;
+  $('target').placeholder = state.pctOn ? '最大重量' : '目標總重';
+  $('pctToggle').classList.toggle('on', state.pctOn);
+  $('pctRow').hidden = !state.pctOn;
+  const preset = [...document.querySelectorAll('#pctRow [data-p]')];
+  preset.forEach(b => b.classList.toggle('on', +b.dataset.p === state.pct));
+  $('pctCustom').classList.toggle('on', !preset.some(b => +b.dataset.p === state.pct));
+  if (document.activeElement !== $('pctInput')) $('pctInput').value = state.pct;
   if (document.activeElement !== $('target')) $('target').value = state.target[u];
   const step = u === 'kg' ? 2.5 : 5;
   $('minus').textContent = `−${step}`;
@@ -223,7 +234,8 @@ function renderResult() {
   const head = Math.abs(r.diff) < 1e-9
     ? `<span class="ok">✓ 單邊放 ${fmt(r.perSide)} ${U()}</span>${r.plates.length ? '' : '（只要空槓）'}`
     : `<span class="warn">最接近 ${fmt(r.total)} ${U()}（差 ${fmt(r.diff)}）</span>・單邊 ${fmt(r.perSide)}`;
-  el.innerHTML = head + list;
+  const calc = state.pctOn ? `<div class="calc">${fmt(r.base)} × ${fmt(state.pct)}% = <b>${fmt(Math.round(r.target * 100) / 100)} ${U()}</b></div>` : '';
+  el.innerHTML = calc + head + list;
   $('apply').disabled = false;
 }
 
@@ -300,6 +312,12 @@ $('undo').addEventListener('click', () => {
 $('clear').addEventListener('click', () => { setSide([]); buzz(); render(); });
 
 $('target').addEventListener('input', e => { state.target[U()] = e.target.value; render(); });
+$('pctToggle').addEventListener('click', () => { state.pctOn = !state.pctOn; buzz(); render(); });
+$('pctRow').addEventListener('click', e => {
+  const b = e.target.closest('[data-p]');
+  if (b) { state.pct = +b.dataset.p; buzz(); render(); }
+});
+$('pctInput').addEventListener('input', e => { state.pct = parseFloat(e.target.value) || 0; render(); });
 $('target').addEventListener('keydown', e => { if (e.key === 'Enter') { e.target.blur(); $('apply').click(); } });
 function nudge(d) {
   const step = U() === 'kg' ? 2.5 : 5;
