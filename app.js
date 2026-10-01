@@ -207,7 +207,7 @@ function renderControls() {
   $('plateBtns').innerHTML = plates().map(w => {
     const s = STYLE[u][w], lim = limitOf(w), left = lim - usedOf(w);
     const badge = lim === Infinity ? '' : `<span class="left">${left}</span>`;
-    return `<button class="pbtn ${s.light ? 'light' : ''}" data-w="${w}" style="background:${s.c};color:${s.light ? '#1b1e25' : '#fff'}" ${left <= 0 ? 'disabled' : ''}><span>${fmt(w)}</span>${badge}</button>`;
+    return `<button class="pbtn ${s.light ? 'light' : ''}" data-w="${w}" style="background:${s.c};color:${s.light ? '#1b1e25' : '#fff'}" ${left <= 0 ? 'disabled' : ''}><span class="lbl">${fmt(w)}</span>${badge}</button>`;
   }).join('');
   $('undo').disabled = !history.length;
   $('clear').disabled = !side().length;
