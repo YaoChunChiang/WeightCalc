@@ -1,5 +1,5 @@
 const PLATES = {
-  kg: [25, 20, 15, 10, 5, 2.5, 1.25, 1, 0.5],
+  kg: [25, 20, 15, 10, 5, 2.5, 2, 1, 0.5],
   lb: [45, 35, 25, 10, 5, 2.5],
 };
 const BARS = { kg: [15, 20], lb: [35, 45] };
@@ -12,7 +12,7 @@ const STYLE = {
     10:   { c: '#16a34a', h: 180, t: 9 },
     5:    { c: '#eef1f5', h: 116, t: 7, light: true },
     2.5:  { c: '#2b2f38', h: 92,  t: 6 },
-    1.25: { c: '#a3aab6', h: 74,  t: 5, light: true },
+    2:    { c: '#1f5fd6', h: 82,  t: 5 },
     1:    { c: '#15803d', h: 64,  t: 4 },
     0.5:  { c: '#cbd5e1', h: 56,  t: 3, light: true },
   },
@@ -42,7 +42,12 @@ let history = [];
 function load() {
   try {
     const s = JSON.parse(localStorage.getItem(STORE_KEY));
-    if (s && s.unit) return Object.assign(defaults(), s);
+    if (s && s.unit) {
+      const st = Object.assign(defaults(), s);
+      // drop plates that are no longer offered (e.g. old 1.25 kg)
+      for (const u of ['kg', 'lb']) st.side[u] = (st.side[u] || []).filter(w => PLATES[u].includes(w));
+      return st;
+    }
   } catch (e) {}
   return defaults();
 }
@@ -80,7 +85,7 @@ function setSide(next) {
 // Finds plates for one side: exact match with fewest plates (heaviest first on ties),
 // otherwise the heaviest reachable load not exceeding the target.
 function solve(perSide) {
-  const Q = 4; // quarter units handle 1.25 / 2.5
+  const Q = 4; // quarter units handle 0.5 / 2.5 (and lb 2.5)
   const T = Math.floor(perSide * Q + 1e-6);
   const items = plates().map(w => {
     const u = Math.round(w * Q);
