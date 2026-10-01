@@ -6,13 +6,17 @@
 <meta name="theme-color" content="#111318">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="槓鈴">
+<meta name="mobile-web-app-capable" content="yes">
 <title>槓鈴計算器</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="style.css?v=20261001-1112">
+<link rel="stylesheet" href="style.css?v=20261001-1136">
+<script src="viewport.js?v=20261001-1136"></script>
 </head>
 <body>
+<div class="shell">
 <main class="app page" id="page-calc">
   <header>
     <h1>槓鈴計算器</h1>
@@ -20,9 +24,7 @@
       <button data-unit="kg">kg</button>
       <button data-unit="lb">lb</button>
     </div>
-    <button class="icon-btn" id="openInv" aria-label="槓片庫存設定">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
-    </button>
+    <button class="text-btn" id="openInv">槓片庫存</button>
   </header>
 
   <section class="total">
@@ -177,8 +179,10 @@
   </div>
 </div>
 
-<script src="app.js?v=20261001-1112"></script>
-<script src="log.js?v=20261001-1112"></script>
-<script src="update.js?v=20261001-1112"></script>
+</div>
+
+<script src="app.js?v=20261001-1136"></script>
+<script src="log.js?v=20261001-1136"></script>
+<script src="update.js?v=20261001-1136"></script>
 </body>
 </html>

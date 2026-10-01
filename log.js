@@ -67,7 +67,7 @@ function showPage(p) {
   $('page-calc').hidden = p !== 'calc';
   $('page-log').hidden = p !== 'log';
   document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.page === p));
-  window.scrollTo(0, 0);
+  $('page-' + p).scrollTop = 0;
   renderLog();
 }
 $('tabbar').addEventListener('click', e => {

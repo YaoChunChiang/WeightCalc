@@ -217,7 +217,7 @@ function renderResult() {
     : '';
   const head = Math.abs(r.diff) < 1e-9
     ? `<span class="ok">✓ 單邊放 ${fmt(r.perSide)} ${U()}</span>${r.plates.length ? '' : '（只要空槓）'}`
-    : `<span class="warn">湊不到剛好，最接近 ${fmt(r.total)} ${U()}（差 ${fmt(r.diff)}）</span><br>單邊放 ${fmt(r.perSide)} ${U()}`;
+    : `<span class="warn">最接近 ${fmt(r.total)} ${U()}（差 ${fmt(r.diff)}）</span>・單邊 ${fmt(r.perSide)}`;
   el.innerHTML = head + list;
   $('apply').disabled = false;
 }
@@ -331,9 +331,9 @@ $('invRows').addEventListener('click', e => {
   if (!b) return;
   const w = parseFloat(b.dataset.w), d = +b.dataset.d, inv = state.inv[U()];
   const v = inv[w];
-  // ∞ → 1 ;  0 … 20 ;  past 20 → ∞
+  // ∞ → (+) 1 / (−) 0 ;  0 … 20 ;  past 20 → ∞
   let next;
-  if (v == null) next = 1;
+  if (v == null) next = d > 0 ? 1 : 0;
   else next = v + d > 20 ? null : Math.max(0, v + d);
   if (next == null) delete inv[w]; else inv[w] = next;
   // drop outermost plates that exceed the new limit
