@@ -180,7 +180,7 @@ header h1 { font-size: 18px; margin: 0; flex: 1; min-width: 0; letter-spacing: .
 
 .timer-head, .log-head { display: flex; align-items: center; gap: 8px; }
 .timer-head .card-title, .log-head .card-title { flex: 1; white-space: nowrap; }
-.presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .presets button { height: 32px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); font-weight: 600; font-size: 14px; color: var(--muted); }
 .presets button.on { border-color: var(--accent); color: var(--accent); background: #2a2410; }
 .timer-row { display: flex; align-items: center; gap: 8px; }
