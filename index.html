@@ -77,9 +77,42 @@
 </main>
 
 <main class="app page" id="page-log" hidden>
-  <header>
-    <h1>訓練紀錄</h1>
-  </header>
+  <section class="card log-card">
+    <div class="log-head">
+      <span class="card-title">今日紀錄 <small id="logDate"></small></span>
+      <button class="btn small danger" id="logClear">清空</button>
+      <button class="btn small" id="logCopy">複製紀錄</button>
+    </div>
+    <div class="log-list" id="logList"></div>
+  </section>
+
+  <section class="card timer" id="timerCard">
+    <div class="timer-head">
+      <span class="card-title">組間休息</span>
+      <label class="check">
+        <input type="checkbox" id="timerAuto">
+        <span>記錄後自動計時</span>
+      </label>
+      <div class="seg small" id="timerMode">
+        <button data-mode="up">正計時</button>
+        <button data-mode="down">倒數</button>
+      </div>
+    </div>
+    <div class="presets" id="presets">
+      <button data-s="60">60s</button>
+      <button data-s="90">90s</button>
+      <button data-s="120">2m</button>
+      <button data-s="180">3m</button>
+    </div>
+    <div class="timer-row">
+      <div class="clock-wrap">
+        <div class="clock" id="clock">0:00</div>
+        <div class="clock-sub" id="clockSub"></div>
+      </div>
+      <button class="btn primary" id="timerToggle">▶ 開始</button>
+      <button class="btn" id="timerReset">重設</button>
+    </div>
+  </section>
 
   <section class="card">
     <button class="ex-pick" id="exPick">
@@ -107,41 +140,6 @@
       <button class="num-step" data-field="reps" data-d="1">+</button>
     </div>
     <button class="btn primary big" id="logSet">✓ 記錄一組</button>
-  </section>
-
-  <section class="card timer" id="timerCard">
-    <div class="timer-head">
-      <span class="card-title">組間休息</span>
-      <div class="seg small" id="timerMode">
-        <button data-mode="up">正計時</button>
-        <button data-mode="down">倒數</button>
-      </div>
-    </div>
-    <div class="presets" id="presets">
-      <button data-s="60">60s</button>
-      <button data-s="90">90s</button>
-      <button data-s="120">2m</button>
-      <button data-s="180">3m</button>
-    </div>
-    <div class="clock" id="clock">0:00</div>
-    <div class="clock-sub" id="clockSub"></div>
-    <div class="actions">
-      <button class="btn primary" id="timerToggle">▶ 開始</button>
-      <button class="btn" id="timerReset">重設</button>
-    </div>
-    <label class="check">
-      <input type="checkbox" id="timerAuto">
-      <span>記錄一組後自動開始計時</span>
-    </label>
-  </section>
-
-  <section class="card">
-    <div class="log-head">
-      <span class="card-title">今日紀錄 <small id="logDate"></small></span>
-      <button class="btn small" id="logCopy">複製紀錄</button>
-    </div>
-    <div id="logList"></div>
-    <button class="btn danger" id="logClear" style="width:100%">清空今日</button>
   </section>
 </main>
 

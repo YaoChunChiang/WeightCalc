@@ -93,7 +93,7 @@ function stopTimer() {
 // returns { text, over } for the big clock and the nav pill
 function clockText() {
   const running = !!tm().startedAt, e = elapsed();
-  if (tm().mode === 'up') return { text: mmss(e), over: false };
+  if (tm().mode === 'up') return { text: mmss(running ? e : tm().pendingRest || 0), over: false };
   const left = tm().seconds - e;
   if (!running) return { text: mmss(tm().seconds), over: false };
   return left >= 0 ? { text: mmss(Math.ceil(left)), over: false } : { text: '+' + mmss(-left), over: true };
@@ -113,7 +113,7 @@ function tick() {
 
   let sub = '';
   if (running) sub = tm().mode === 'down' ? `休息中 · 已過 ${mmss(elapsed())}` : '休息中';
-  else if (tm().pendingRest != null) sub = `已暫停，休息 ${mmss(tm().pendingRest)} 會記到下一組`;
+  else if (tm().pendingRest != null) sub = `已暫停 ${mmss(tm().pendingRest)}，記到下一組`;
   $('clockSub').textContent = sub;
 
   const pill = $('navPill');
@@ -166,6 +166,8 @@ $('logSet').addEventListener('click', () => {
   try { navigator.vibrate && navigator.vibrate(20); } catch (e) {}
   toast(`已記錄：${fmt(w)}${U()} × ${reps}下`);
   renderLog();
+  const row = [...document.querySelectorAll('#logList .set-row')].find(r => r.dataset.key === `${cur().ex}|${w}|${U()}|${reps}`);
+  if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 });
 
 /* ---------- exercise sheet ---------- */
@@ -276,12 +278,12 @@ $('logList').addEventListener('click', e => {
 $('logClear').addEventListener('click', () => {
   const b = $('logClear');
   if (!clearArmed) {
-    b.textContent = '再按一次確認清空';
-    clearArmed = setTimeout(() => { clearArmed = null; b.textContent = '清空今日'; }, 3000);
+    b.textContent = '確認清空？';
+    clearArmed = setTimeout(() => { clearArmed = null; b.textContent = '清空'; }, 3000);
     return;
   }
   clearTimeout(clearArmed); clearArmed = null;
-  b.textContent = '清空今日';
+  b.textContent = '清空';
   log.sets = []; log.date = today();
   tm().startedAt = null; tm().pendingRest = null;
   buzz(); renderLog();
