@@ -237,7 +237,7 @@ function render() {
   renderTotal();
   renderControls();
   renderResult();
-  if (document.body.classList.contains('sheet-open')) renderInv();
+  if ($('sheet').classList.contains('open')) renderInv();
   save();
 }
 
@@ -306,14 +306,21 @@ $('apply').addEventListener('click', () => {
   setSide(r.plates); buzz(); render();
 });
 
+// bottom sheets (shared with log.js)
+function showSheet(el, open) {
+  document.querySelectorAll('.sheet.open').forEach(s => s.classList.remove('open'));
+  if (open) el.classList.add('open');
+  $('scrim').classList.toggle('open', open);
+}
+
 // inventory sheet
 function openSheet(open) {
-  document.body.classList.toggle('sheet-open', open);
+  showSheet($('sheet'), open);
   if (open) renderInv();
 }
 $('openInv').addEventListener('click', () => openSheet(true));
 $('closeInv').addEventListener('click', () => openSheet(false));
-$('scrim').addEventListener('click', () => openSheet(false));
+$('scrim').addEventListener('click', () => showSheet(null, false));
 $('invRows').addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;

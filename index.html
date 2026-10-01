@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="app">
+<main class="app page" id="page-calc">
   <header>
     <h1>槓鈴計算器</h1>
     <div class="seg" id="unitSeg">
@@ -74,7 +74,90 @@
       <button class="btn primary" id="apply" style="width:100%;margin-top:12px">放到槓上</button>
     </div>
   </section>
-</div>
+</main>
+
+<main class="app page" id="page-log" hidden>
+  <header>
+    <h1>訓練紀錄</h1>
+  </header>
+
+  <section class="card">
+    <button class="ex-pick" id="exPick">
+      <span class="ex-label">動作</span>
+      <span class="ex-name" id="exName">選擇動作</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+
+    <div class="num-row">
+      <span class="num-label">重量</span>
+      <button class="num-step" data-field="w" data-d="-1">−</button>
+      <label class="num-field">
+        <input id="logW" type="number" inputmode="decimal" min="0" placeholder="0">
+        <span id="logUnit">kg</span>
+      </label>
+      <button class="num-step" data-field="w" data-d="1">+</button>
+    </div>
+    <div class="num-row">
+      <span class="num-label">次數</span>
+      <button class="num-step" data-field="reps" data-d="-1">−</button>
+      <label class="num-field">
+        <input id="logReps" type="number" inputmode="numeric" min="1" placeholder="0">
+        <span>下</span>
+      </label>
+      <button class="num-step" data-field="reps" data-d="1">+</button>
+    </div>
+    <button class="btn primary big" id="logSet">✓ 記錄一組</button>
+  </section>
+
+  <section class="card timer" id="timerCard">
+    <div class="timer-head">
+      <span class="card-title">組間休息</span>
+      <div class="seg small" id="timerMode">
+        <button data-mode="up">正計時</button>
+        <button data-mode="down">倒數</button>
+      </div>
+    </div>
+    <div class="presets" id="presets">
+      <button data-s="60">60s</button>
+      <button data-s="90">90s</button>
+      <button data-s="120">2m</button>
+      <button data-s="180">3m</button>
+    </div>
+    <div class="clock" id="clock">0:00</div>
+    <div class="clock-sub" id="clockSub"></div>
+    <div class="actions">
+      <button class="btn primary" id="timerToggle">▶ 開始</button>
+      <button class="btn" id="timerReset">重設</button>
+    </div>
+    <label class="check">
+      <input type="checkbox" id="timerAuto">
+      <span>記錄一組後自動開始計時</span>
+    </label>
+  </section>
+
+  <section class="card">
+    <div class="log-head">
+      <span class="card-title">今日紀錄 <small id="logDate"></small></span>
+      <button class="btn small" id="logCopy">複製紀錄</button>
+    </div>
+    <div id="logList"></div>
+    <button class="btn danger" id="logClear" style="width:100%">清空今日</button>
+  </section>
+</main>
+
+<nav class="tabbar" id="tabbar">
+  <button data-page="calc">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12h20"/><rect x="5" y="6" width="3" height="12" rx="1"/><rect x="16" y="6" width="3" height="12" rx="1"/></svg>
+    <span>計算器</span>
+  </button>
+  <button data-page="log">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg>
+    <span>訓練紀錄</span>
+    <em class="pill" id="navPill" hidden></em>
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
 
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet" role="dialog" aria-label="槓片庫存">
@@ -86,6 +169,17 @@
   <button class="btn primary" id="closeInv">完成</button>
 </div>
 
+<div class="sheet" id="exSheet" role="dialog" aria-label="選擇動作">
+  <div class="grab"></div>
+  <h2>選擇動作</h2>
+  <div id="exList"></div>
+  <div class="ex-add">
+    <input id="exNew" type="text" placeholder="新增自訂動作" maxlength="30">
+    <button class="btn primary" id="exAdd">新增</button>
+  </div>
+</div>
+
 <script src="app.js"></script>
+<script src="log.js"></script>
 </body>
 </html>
