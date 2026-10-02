@@ -143,11 +143,14 @@ function solveFor(base, target) {
 }
 const round2 = n => fmt(Math.round(n * 100) / 100);
 // RM weights within ±0.9 of a multiple of 5 snap to it (69.6 → 70, 74.4 → 75),
-// unless that would give the same weight as another RM — then the raw value stays
-const snap5 = n => { const r = Math.round(n / 5) * 5; return Math.abs(n - r) <= 0.9 + 1e-9 ? r : n; };
+// unless that would give the same weight as another RM — then the raw value stays.
+// Anything not snapped keeps one decimal, nudged to the nearer .0 / .5 (66.4 → 66.5, 61.6 → 61.5)
+const half = n => Math.round(Math.round(n * 10) / 10 * 2) / 2;
+const snap5 = n => { const r = Math.round(n / 5) * 5; return Math.abs(n - r) <= 0.9 + 1e-9 ? r : half(n); };
 function rmWeights(base) {
   const ns = Object.keys(RM_PCT);
-  const raw = ns.map(n => base * RM_PCT[n] / 100), snapped = raw.map(snap5);
+  const exact = ns.map(n => base * RM_PCT[n] / 100);
+  const raw = exact.map(half), snapped = exact.map(snap5);
   const same = (a, b) => Math.abs(a - b) < 1e-9;
   const out = {};
   ns.forEach((n, i) => {
