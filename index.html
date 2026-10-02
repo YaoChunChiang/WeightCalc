@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="style.css?v=20261002-0919">
+<link rel="stylesheet" href="style.css?v=20261002-0954">
 </head>
 <body>
 <div class="shell">
@@ -21,7 +21,6 @@
       <button data-unit="kg">kg</button>
       <button data-unit="lb">lb</button>
     </div>
-    <button class="text-btn" id="openInv">槓片庫存</button>
   </header>
 
   <section class="total">
@@ -47,34 +46,24 @@
   </div>
 
   <section class="panel">
-    <div class="tabs" id="tabs">
-      <button data-tab="solve">總重回推</button>
-      <button data-tab="manual">手動加片</button>
+    <div class="target">
+      <button class="step" id="minus"></button>
+      <label class="field">
+        <input id="target" type="number" inputmode="decimal" min="0" placeholder="目標總重">
+        <span id="targetUnit">kg</span>
+      </label>
+      <button class="step" id="plus"></button>
+      <button class="pct-btn" id="pctBtn" hidden>5RM ▾</button>
+      <span class="pct-eq" id="pctEq" hidden>=</span>
+      <div class="pct-out" id="pctOut" hidden><b id="pctWeight">—</b><small id="pctActual"></small></div>
+      <button class="step pct-toggle" id="pctToggle" aria-label="依 RM 計算">RM</button>
     </div>
-
-    <div id="tab-solve">
-      <div class="target">
-        <button class="step" id="minus"></button>
-        <label class="field">
-          <input id="target" type="number" inputmode="decimal" min="0" placeholder="目標總重">
-          <span id="targetUnit">kg</span>
-        </label>
-        <button class="step" id="plus"></button>
-        <button class="pct-btn" id="pctBtn" hidden>5RM ▾</button>
-        <span class="pct-eq" id="pctEq" hidden>=</span>
-        <div class="pct-out" id="pctOut" hidden><b id="pctWeight">—</b><small id="pctActual"></small></div>
-        <button class="step pct-toggle" id="pctToggle" aria-label="依 RM 計算">RM</button>
-      </div>
-      <div class="result" id="result"></div>
-      <button class="btn primary" id="apply">放到槓上</button>
-    </div>
-
-    <div id="tab-manual" hidden>
-      <div class="plates" id="plateBtns"></div>
-      <div class="actions" style="margin-top:12px">
-        <button class="btn" id="undo">↶ 復原</button>
-        <button class="btn danger" id="clear">清空</button>
-      </div>
+    <div class="result" id="result"></div>
+    <div class="plates" id="plateBtns"></div>
+    <div class="plate-hint" id="plateHint"></div>
+    <div class="actions">
+      <button class="btn" id="undo">↶ 復原</button>
+      <button class="btn danger" id="clear">清空</button>
     </div>
   </section>
 </main>
@@ -162,15 +151,6 @@
 <div class="toast" id="toast"></div>
 
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheet" role="dialog" aria-label="槓片庫存">
-  <div class="grab"></div>
-  <h2>槓片庫存</h2>
-  <p>以「對」計算（左右各一片 = 1 對）。∞ 表示不限數量。</p>
-  <div id="invRows"></div>
-  <button class="btn" id="invReset">全部設為不限</button>
-  <button class="btn primary" id="closeInv">完成</button>
-</div>
-
 <div class="sheet" id="pctSheet" role="dialog" aria-label="RM">
   <div class="grab"></div>
   <div class="pct-sheet-head"><h2>RM</h2><span id="pctSheetCalc"></span></div>
@@ -190,8 +170,8 @@
 
 </div>
 
-<script src="app.js?v=20261002-0919"></script>
-<script src="log.js?v=20261002-0919"></script>
-<script src="update.js?v=20261002-0919"></script>
+<script src="app.js?v=20261002-0954"></script>
+<script src="log.js?v=20261002-0954"></script>
+<script src="update.js?v=20261002-0954"></script>
 </body>
 </html>
