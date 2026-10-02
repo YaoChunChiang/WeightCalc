@@ -143,13 +143,17 @@ $('timerAuto').addEventListener('change', e => { tm().auto = e.target.checked; r
 
 /* ---------- inputs ---------- */
 const cur = () => log.current;
+const MAX_REPS = 100;
 
-$('logW').addEventListener('input', e => { cur().w = e.target.value; saveLog(); });
-$('logReps').addEventListener('input', e => { cur().reps = e.target.value; saveLog(); });
+$('logW').addEventListener('input', e => { cur().w = capInput(e.target); saveLog(); });
+$('logReps').addEventListener('input', e => {
+  if (parseFloat(e.target.value) > MAX_REPS) { e.target.value = MAX_REPS; toast(`上限 ${MAX_REPS} 下`); }
+  cur().reps = e.target.value; saveLog();
+});
 document.querySelectorAll('.num-step').forEach(b => b.addEventListener('click', () => {
   const f = b.dataset.field, d = +b.dataset.d;
   const v = parseFloat(cur()[f]) || 0;
-  cur()[f] = f === 'w' ? fmt(Math.max(0, v + d * STEP)) : String(Math.max(1, Math.round(v) + d));
+  cur()[f] = f === 'w' ? fmt(Math.min(MAX[U()], Math.max(0, v + d * STEP))) : String(Math.min(MAX_REPS, Math.max(1, Math.round(v) + d)));
   buzz(); renderLog();
 }));
 
