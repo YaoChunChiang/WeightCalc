@@ -1,5 +1,5 @@
 const PLATES = {
-  kg: [25, 20, 15, 10, 5, 2.5, 2, 1, 0.5],
+  kg: [25, 20, 15, 10, 5, 2.5, 2, 1.5, 1, 0.5],
   lb: [45, 35, 25, 10, 5, 2.5],
 };
 const BARS = { kg: [15, 20], lb: [35, 45] };
@@ -14,10 +14,12 @@ const STYLE = {
     15:   { c: '#eab308', h: 180, t: 11, light: true },
     10:   { c: '#16a34a', h: 180, t: 9 },
     5:    { c: '#eef1f5', h: 116, t: 7, light: true },
-    2.5:  { c: '#2b2f38', h: 92,  t: 6 },
-    2:    { c: '#1f5fd6', h: 82,  t: 5 },
-    1:    { c: '#15803d', h: 64,  t: 4 },
-    0.5:  { c: '#cbd5e1', h: 56,  t: 3, light: true },
+    // small plates reuse the big plates' color code in a lighter shade (2.5 red, 2 blue, 1.5 yellow, 1 green, 0.5 white)
+    2.5:  { c: '#f93f3f', h: 92,  t: 6 },
+    2:    { c: '#307bff', h: 82,  t: 5 },
+    1.5:  { c: '#ffd84c', h: 72,  t: 4.5, light: true },
+    1:    { c: '#32f57c', h: 64,  t: 4, light: true },
+    0.5:  { c: '#ffffff', h: 56,  t: 3, light: true },
   },
   lb: {
     45:  { c: '#1f5fd6', h: 180, t: 15 },
