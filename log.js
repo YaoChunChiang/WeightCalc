@@ -143,14 +143,13 @@ $('timerAuto').addEventListener('change', e => { tm().auto = e.target.checked; r
 
 /* ---------- inputs ---------- */
 const cur = () => log.current;
-const wStep = () => U() === 'kg' ? 2.5 : 5;
 
 $('logW').addEventListener('input', e => { cur().w = e.target.value; saveLog(); });
 $('logReps').addEventListener('input', e => { cur().reps = e.target.value; saveLog(); });
 document.querySelectorAll('.num-step').forEach(b => b.addEventListener('click', () => {
   const f = b.dataset.field, d = +b.dataset.d;
   const v = parseFloat(cur()[f]) || 0;
-  cur()[f] = f === 'w' ? fmt(Math.max(0, v + d * wStep())) : String(Math.max(1, Math.round(v) + d));
+  cur()[f] = f === 'w' ? fmt(Math.max(0, v + d * STEP)) : String(Math.max(1, Math.round(v) + d));
   buzz(); renderLog();
 }));
 

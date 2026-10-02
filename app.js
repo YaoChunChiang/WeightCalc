@@ -3,7 +3,7 @@ const PLATES = {
   lb: [45, 35, 25, 10, 5, 2.5],
 };
 const BARS = { kg: [15, 20], lb: [35, 45] };
-const STEP = 5;   // ± buttons next to the target, same for kg and lb
+const STEP = 5;   // weight ± buttons (calculator target and log.js), same for kg and lb
 // NSCA %1RM table: N RM -> % of 1RM
 const RM_PCT = { 1: 100, 2: 95, 3: 93, 4: 90, 5: 87, 6: 85, 7: 83, 8: 80, 9: 77, 10: 75, 12: 67, 15: 65 };
 // color, svg height, svg thickness, light (dark text)
