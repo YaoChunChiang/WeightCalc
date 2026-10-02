@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="style.css?v=20261001-1722">
+<link rel="stylesheet" href="style.css?v=20261002-0852">
 </head>
 <body>
 <div class="shell">
@@ -48,19 +48,11 @@
 
   <section class="panel">
     <div class="tabs" id="tabs">
-      <button data-tab="manual">手動加片</button>
       <button data-tab="solve">總重回推</button>
+      <button data-tab="manual">手動加片</button>
     </div>
 
-    <div id="tab-manual">
-      <div class="plates" id="plateBtns"></div>
-      <div class="actions" style="margin-top:12px">
-        <button class="btn" id="undo">↶ 復原</button>
-        <button class="btn danger" id="clear">清空</button>
-      </div>
-    </div>
-
-    <div id="tab-solve" hidden>
+    <div id="tab-solve">
       <div class="target">
         <button class="step" id="minus"></button>
         <label class="field">
@@ -68,13 +60,21 @@
           <span id="targetUnit">kg</span>
         </label>
         <button class="step" id="plus"></button>
-        <button class="pct-btn" id="pctBtn" hidden>×80%</button>
+        <button class="pct-btn" id="pctBtn" hidden>5RM ▾</button>
         <span class="pct-eq" id="pctEq" hidden>=</span>
         <div class="pct-out" id="pctOut" hidden><b id="pctWeight">—</b><small id="pctActual"></small></div>
-        <button class="step pct-toggle" id="pctToggle" aria-label="乘上百分比">%</button>
+        <button class="step pct-toggle" id="pctToggle" aria-label="依 RM 計算">RM</button>
       </div>
       <div class="result" id="result"></div>
       <button class="btn primary" id="apply">放到槓上</button>
+    </div>
+
+    <div id="tab-manual" hidden>
+      <div class="plates" id="plateBtns"></div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn" id="undo">↶ 復原</button>
+        <button class="btn danger" id="clear">清空</button>
+      </div>
     </div>
   </section>
 </main>
@@ -171,24 +171,10 @@
   <button class="btn primary" id="closeInv">完成</button>
 </div>
 
-<div class="sheet" id="pctSheet" role="dialog" aria-label="百分比">
+<div class="sheet" id="pctSheet" role="dialog" aria-label="RM">
   <div class="grab"></div>
-  <div class="pct-sheet-head"><h2>百分比</h2><span id="pctSheetCalc"></span></div>
-  <div class="pct-presets">
-    <button data-p="60">60%</button>
-    <button data-p="65">65%</button>
-    <button data-p="70">70%</button>
-    <button data-p="75">75%</button>
-    <button data-p="80">80%</button>
-    <button data-p="85">85%</button>
-    <button data-p="90">90%</button>
-    <button data-p="95">95%</button>
-  </div>
-  <div class="pct-adjust">
-    <button class="pct-step" data-d="-1" aria-label="減少 2.5%">−</button>
-    <output id="pctVal">80%</output>
-    <button class="pct-step" data-d="1" aria-label="增加 2.5%">+</button>
-  </div>
+  <div class="pct-sheet-head"><h2>RM</h2><span id="pctSheetCalc"></span></div>
+  <div class="rm-list" id="rmList"></div>
   <button class="btn primary" id="pctDone">完成</button>
 </div>
 
@@ -204,8 +190,8 @@
 
 </div>
 
-<script src="app.js?v=20261001-1722"></script>
-<script src="log.js?v=20261001-1722"></script>
-<script src="update.js?v=20261001-1722"></script>
+<script src="app.js?v=20261002-0852"></script>
+<script src="log.js?v=20261002-0852"></script>
+<script src="update.js?v=20261002-0852"></script>
 </body>
 </html>

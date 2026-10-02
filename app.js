@@ -3,6 +3,8 @@ const PLATES = {
   lb: [45, 35, 25, 10, 5, 2.5],
 };
 const BARS = { kg: [15, 20], lb: [35, 45] };
+// NSCA %1RM table: N RM -> % of 1RM
+const RM_PCT = { 1: 100, 2: 95, 3: 93, 4: 90, 5: 87, 6: 85, 7: 83, 8: 80, 9: 77, 10: 75, 12: 67, 15: 65 };
 // color, svg height, svg thickness, light (dark text)
 const STYLE = {
   kg: {
@@ -29,14 +31,14 @@ const STYLE = {
 const STORE_KEY = 'barbell-calc-v1';
 const defaults = () => ({
   unit: 'kg',
-  tab: 'manual',
+  tab: 'solve',
   bar: { kg: 20, lb: 45 },          // number or 'custom'
   customBar: { kg: '', lb: '' },
   side: { kg: [], lb: [] },
   inv: { kg: {}, lb: {} },          // weight -> pairs (missing = unlimited)
   target: { kg: '', lb: '' },
-  pctOn: false,                     // solve tab: target = entered weight × pct%
-  pct: 80,
+  pctOn: false,                     // solve tab RM mode: target = entered 1RM × RM_PCT[rm]%
+  rm: 5,
   exclude: { kg: [], lb: [] },      // solve tab: plate weights the user doesn't want to use
 });
 let state = load();
@@ -49,6 +51,8 @@ function load() {
       const st = Object.assign(defaults(), s);
       // drop plates that are no longer offered (e.g. old 1.25 kg)
       for (const u of ['kg', 'lb']) st.side[u] = (st.side[u] || []).filter(w => PLATES[u].includes(w));
+      if (!RM_PCT[st.rm]) st.rm = 5;
+      delete st.pct;   // replaced by rm
       return st;
     }
   } catch (e) {}
@@ -127,15 +131,33 @@ function solve(perSide) {
 
 function solveTarget() {
   const base = parseFloat(state.target[U()]);
+  if (!isFinite(base)) return { error: state.pctOn ? '輸入 1RM' : '輸入想要的總重量' };
+  return solveFor(base, state.pctOn ? rmWeight(base, state.rm) : base);
+}
+function solveFor(base, target) {
   const bar = barWeight();
-  if (!isFinite(base)) return { error: state.pctOn ? '輸入最大重量' : '輸入想要的總重量' };
-  if (state.pctOn && !(state.pct > 0)) return { error: '輸入百分比' };
-  const target = state.pctOn ? base * state.pct / 100 : base;
   if (target < bar) return { error: `目標比槓重 (${fmt(bar)}) 還輕` };
   const r = solve((target - bar) / 2);
   const total = bar + r.perSide * 2;
   return { ...r, base, target, total, diff: target - total };
 }
+const round2 = n => fmt(Math.round(n * 100) / 100);
+// RM weights within ±0.9 of a multiple of 5 snap to it (69.6 → 70, 74.4 → 75),
+// unless that would give the same weight as another RM — then the raw value stays
+const snap5 = n => { const r = Math.round(n / 5) * 5; return Math.abs(n - r) <= 0.9 + 1e-9 ? r : n; };
+function rmWeights(base) {
+  const ns = Object.keys(RM_PCT);
+  const raw = ns.map(n => base * RM_PCT[n] / 100), snapped = raw.map(snap5);
+  const same = (a, b) => Math.abs(a - b) < 1e-9;
+  const out = {};
+  ns.forEach((n, i) => {
+    const s = snapped[i];
+    const clash = ns.some((_, j) => j !== i && (same(s, snapped[j]) || same(s, raw[j])));
+    out[n] = clash ? raw[i] : s;
+  });
+  return out;
+}
+const rmWeight = (base, rm) => rmWeights(base)[rm];
 
 /* ---------- rendering ---------- */
 function chipHTML(w, extra = '') {
@@ -200,16 +222,13 @@ function renderControls() {
   if (document.activeElement !== $('customBar')) $('customBar').value = state.customBar[u];
   $('customUnit').textContent = u;
   $('targetUnit').textContent = u;
-  $('target').placeholder = state.pctOn ? '最大重量' : '目標總重';
+  $('target').placeholder = state.pctOn ? '1RM' : '目標總重';
   $('pctToggle').classList.toggle('on', state.pctOn);
-  // ×% mode turns the input row into "max × pct% = weight"; the % is picked in #pctSheet
+  // RM mode turns the input row into "1RM × N RM = weight"; the RM is picked in #pctSheet
   $('minus').hidden = $('plus').hidden = state.pctOn;
   $('pctBtn').hidden = $('pctEq').hidden = $('pctOut').hidden = !state.pctOn;
-  $('pctBtn').textContent = `×${fmt(state.pct)}%`;
+  $('pctBtn').textContent = `${state.rm}RM ▾`;
   document.querySelector('#tab-solve .target').classList.toggle('pct', state.pctOn);
-  const preset = [...document.querySelectorAll('#pctSheet [data-p]')];
-  preset.forEach(b => b.classList.toggle('on', +b.dataset.p === state.pct));
-  $('pctVal').textContent = fmt(state.pct) + '%';
   if (document.activeElement !== $('target')) $('target').value = state.target[u];
   const step = u === 'kg' ? 2.5 : 5;
   $('minus').textContent = `−${step}`;
@@ -239,10 +258,10 @@ function renderResult() {
   const r = solveTarget();
   const el = $('result');
   const inexact = !r.error && Math.abs(r.diff) > 1e-9;
-  // ×% mode: computed weight (and what can actually be loaded) next to the % stepper
-  $('pctWeight').textContent = r.error ? '—' : fmt(Math.round(r.target * 100) / 100);
+  // RM mode: computed weight (and what can actually be loaded) next to the RM button
+  $('pctWeight').textContent = r.error ? '—' : round2(r.target);
   $('pctActual').textContent = inexact ? `實際 ${fmt(r.total)}` : '';
-  $('pctSheetCalc').textContent = r.error ? '' : `${fmt(r.base)} × ${fmt(state.pct)}% = ${fmt(Math.round(r.target * 100) / 100)} ${U()}`;
+  renderRmList();
   if (r.error) { el.innerHTML = `<span class="${state.target[U()] === '' ? '' : 'err'}">${r.error}</span>`; $('apply').disabled = true; return; }
   const ex = state.exclude[U()];
   const used = plates().filter(w => r.plates.includes(w));
@@ -260,6 +279,23 @@ function renderResult() {
   }
   el.innerHTML = html;
   $('apply').disabled = false;
+}
+
+// RM sheet: every RM with its % and the weight it gives for the entered 1RM
+function renderRmList() {
+  const base = parseFloat(state.target[U()]), ok = isFinite(base);
+  $('pctSheetCalc').textContent = ok ? `1RM ${fmt(base)} ${U()}` : '先輸入 1RM';
+  const ws = ok ? rmWeights(base) : {};
+  $('rmList').innerHTML = Object.keys(RM_PCT).map(n => {
+    const p = RM_PCT[n];
+    let w = '—', actual = '';
+    if (ok) {
+      const t = ws[n], r = solveFor(base, t);
+      w = `${round2(t)} <small class="u">${U()}</small>`;
+      if (!r.error && Math.abs(r.diff) > 1e-9) actual = `<small>實際 ${fmt(r.total)}</small>`;
+    }
+    return `<button data-rm="${n}" class="${+n === state.rm ? 'on' : ''}"><span>${n}RM</span><span>${p}%</span><span class="w"><b>${w}</b>${actual}</span></button>`;
+  }).join('');
 }
 
 function renderInv() {
@@ -338,15 +374,10 @@ $('target').addEventListener('input', e => { state.target[U()] = e.target.value;
 $('pctToggle').addEventListener('click', () => { state.pctOn = !state.pctOn; buzz(); render(); });
 $('pctBtn').addEventListener('click', () => showSheet($('pctSheet'), true));
 $('pctDone').addEventListener('click', () => showSheet(null, false));
-$('pctSheet').addEventListener('click', e => {
-  const b = e.target.closest('[data-p]');
-  if (b) { state.pct = +b.dataset.p; buzz(); render(); }   // stays open; closed by 完成 or the backdrop
+$('rmList').addEventListener('click', e => {
+  const b = e.target.closest('[data-rm]');
+  if (b) { state.rm = +b.dataset.rm; buzz(); render(); showSheet(null, false); }
 });
-document.querySelectorAll('.pct-step').forEach(b => b.addEventListener('click', () => {
-  const p = Math.round((state.pct + +b.dataset.d * 2.5) * 10) / 10;
-  state.pct = Math.min(150, Math.max(5, p));
-  buzz(); render();
-}));
 $('target').addEventListener('keydown', e => { if (e.key === 'Enter') { e.target.blur(); $('apply').click(); } });
 function nudge(d) {
   const step = U() === 'kg' ? 2.5 : 5;
