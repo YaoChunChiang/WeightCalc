@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="style.css?v=20261002-1049">
+<link rel="stylesheet" href="style.css?v=20261002-1130">
 </head>
 <body>
 <div class="shell">
@@ -55,7 +55,7 @@
       <button class="step" id="plus"></button>
       <button class="pct-btn" id="pctBtn" hidden>5RM ▾</button>
       <span class="pct-eq" id="pctEq" hidden>=</span>
-      <div class="pct-out" id="pctOut" hidden><b id="pctWeight">—</b><small id="pctActual"></small></div>
+      <div class="pct-out" id="pctOut" hidden><input id="pctWeight" type="number" inputmode="decimal" min="0" placeholder="—" aria-label="RM 重量"><small id="pctActual"></small></div>
       <button class="step pct-toggle" id="pctToggle" aria-label="依 RM 計算">RM</button>
     </div>
     <div class="result" id="result"></div>
@@ -170,8 +170,8 @@
 
 </div>
 
-<script src="app.js?v=20261002-1049"></script>
-<script src="log.js?v=20261002-1049"></script>
-<script src="update.js?v=20261002-1049"></script>
+<script src="app.js?v=20261002-1130"></script>
+<script src="log.js?v=20261002-1130"></script>
+<script src="update.js?v=20261002-1130"></script>
 </body>
 </html>

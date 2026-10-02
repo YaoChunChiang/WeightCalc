@@ -4,6 +4,7 @@ const PLATES = {
 };
 const BARS = { kg: [15, 20], lb: [35, 45] };
 const STEP = 5;   // weight ± buttons (calculator target and log.js), same for kg and lb
+const MAX = { kg: 600, lb: 1320 };   // most a bar can hold; caps the target / 1RM / RM weight inputs
 // NSCA %1RM table: N RM -> % of 1RM
 const RM_PCT = { 1: 100, 2: 95, 3: 93, 4: 90, 5: 87, 6: 85, 7: 83, 8: 80, 9: 77, 10: 75, 12: 67, 15: 65 };
 // color, svg height, svg thickness, light (dark text)
@@ -203,6 +204,9 @@ function rmWeights(base) {
   return out;
 }
 const rmWeight = (base, rm) => rmWeights(base)[rm];
+// 1RM back-solved from an N RM weight, to 0.1: close enough that rmWeight() gives a whole-number
+// weight straight back (5RM 81 → 93.1 → 81; rounding to 93 would snap to 80)
+const oneRmFrom = (w, rm) => Math.round(w * 100 / RM_PCT[rm] * 10) / 10;
 
 /* ---------- rendering ---------- */
 function chipHTML(w, extra = '') {
@@ -284,7 +288,7 @@ function renderControls() {
   $('plateBtns').style.gridTemplateColumns = `repeat(${Math.ceil(plates().length / 2)}, 1fr)`;
   $('plateBtns').innerHTML = plates().map(w => {
     const on = count(side(), w) || null;
-    if (!target) return plateBtnHTML(w, on);
+    if (!target) return plateBtnHTML(w, on, overMax(w) ? 'dim' : '');
     if (excluded().includes(w)) return plateBtnHTML(w, '✕', 'off');
     const l = lockOf(w);
     if (l) return plateBtnHTML(w, `🔒${l.n}`, 'locked', 'lock');
@@ -309,7 +313,7 @@ function renderResult() {
   const el = $('result');
   const inexact = !r.error && Math.abs(r.diff) > 1e-9;
   // RM mode: computed weight (and what can actually be loaded) next to the RM button
-  $('pctWeight').textContent = r.error ? '—' : round2(r.target);
+  if (document.activeElement !== $('pctWeight')) $('pctWeight').value = r.error ? '' : round2(r.target);
   $('pctActual').textContent = inexact ? `實際 ${fmt(r.total)}` : '';
   renderRmList();
   // status line: only errors (once something is typed) and inexact matches; RM mode shows 實際 in the row
@@ -351,12 +355,28 @@ $('unitSeg').addEventListener('click', e => {
   buzz(); render();
 });
 
+// heaviest bar that keeps the total within MAX: manual plates stay on, while a target re-plans
+// its plates around the bar (the target itself is already capped)
+const maxBar = () => MAX[U()] - (hasTarget() ? 0 : sideSum() * 2);
+const maxMsg = () => toast(`總重上限 ${MAX[U()]} ${U()}`);
+
 $('barSeg').addEventListener('click', e => {
   const b = e.target.closest('button');
-  if (b) { state.bar[U()] = BARS[U()][+b.dataset.bar]; buzz(); render(); }
+  if (!b) return;
+  const w = BARS[U()][+b.dataset.bar];
+  if (w > maxBar() + EPS) { maxMsg(); return; }
+  state.bar[U()] = w; buzz(); render();
 });
-$('customBar').addEventListener('focus', () => { state.bar[U()] = 'custom'; render(); });
-$('customBar').addEventListener('input', e => { state.customBar[U()] = e.target.value; state.bar[U()] = 'custom'; render(); });
+$('customBar').addEventListener('focus', () => {
+  // switching to a custom bar must not push an already-typed heavy custom value over MAX
+  const v = parseFloat(state.customBar[U()]);
+  if (v > maxBar() + EPS) $('customBar').value = state.customBar[U()] = fmt(maxBar());
+  state.bar[U()] = 'custom'; render();
+});
+$('customBar').addEventListener('input', e => {
+  if (parseFloat(e.target.value) > maxBar() + EPS) { e.target.value = fmt(maxBar()); maxMsg(); }
+  state.customBar[U()] = e.target.value; state.bar[U()] = 'custom'; render();
+});
 
 /* plate picker gestures
    no target:   tap = add one plate (manual loading)
@@ -365,8 +385,12 @@ $('customBar').addEventListener('input', e => { state.customBar[U()] = e.target.
 const unlock = w => { state.lock[U()] = locks().filter(l => l.w !== w); };
 const unblock = w => { const ex = excluded(), i = ex.indexOf(w); if (i >= 0) ex.splice(i, 1); };
 
+// manual loading: would one more pair of w push the total past MAX?
+const overMax = w => barWeight() + (sideSum() + w) * 2 > MAX[U()] + EPS;
+
 function onPlateTap(w) {
   const r = solveTarget();
+  if (r.error && overMax(w)) { maxMsg(); return; }
   snapshot();
   if (r.error) state.side[U()] = byWeight([...side(), w]);
   else if (lockOf(w)) {
@@ -448,7 +472,12 @@ $('clear').addEventListener('click', () => {
   buzz(); render();
 });
 
-$('target').addEventListener('input', e => { state.target[U()] = e.target.value; render(); });
+// a typed weight over MAX is pulled back to MAX in the field itself
+function capInput(el) {
+  if (parseFloat(el.value) > MAX[U()]) { el.value = MAX[U()]; toast(`上限 ${MAX[U()]} ${U()}`); }
+  return el.value;
+}
+$('target').addEventListener('input', e => { state.target[U()] = capInput(e.target); render(); });
 $('pctToggle').addEventListener('click', () => { state.pctOn = !state.pctOn; buzz(); render(); });
 $('pctBtn').addEventListener('click', () => showSheet($('pctSheet'), true));
 $('pctDone').addEventListener('click', () => showSheet(null, false));
@@ -457,10 +486,18 @@ $('rmList').addEventListener('click', e => {
   if (b) { state.rm = +b.dataset.rm; buzz(); render(); showSheet(null, false); }
 });
 $('target').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
+// RM mode: typing the N RM weight back-solves the 1RM
+$('pctWeight').addEventListener('input', e => {
+  const v = parseFloat(capInput(e.target));
+  state.target[U()] = isFinite(v) && v > 0 ? fmt(Math.min(MAX[U()], oneRmFrom(v, state.rm))) : '';
+  render();
+});
+$('pctWeight').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
+$('pctWeight').addEventListener('blur', () => renderResult());
 function nudge(d) {
   const cur = parseFloat(state.target[U()]);
   const base = isFinite(cur) ? cur : barWeight();
-  state.target[U()] = fmt(Math.max(0, base + d * STEP));
+  state.target[U()] = fmt(Math.min(MAX[U()], Math.max(0, base + d * STEP)));
   buzz(); render();
 }
 $('minus').addEventListener('click', () => nudge(-1));
