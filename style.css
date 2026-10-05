@@ -112,19 +112,26 @@ header h1 { font-size: 18px; margin: 0; flex: 1; min-width: 0; letter-spacing: .
 .target { display: flex; gap: 6px; align-items: stretch; }
 .target .step { width: 48px; flex: none; height: clamp(44px, calc(var(--u) * 6.6), 56px); border-radius: 12px; background: var(--card-2); font-weight: 700; font-size: 14px; }
 .target .field { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 0 10px; }
-.target .field:focus-within { border-color: var(--accent); }
+.target .field:focus-within, .target .field.scrubbing { border-color: var(--accent); }
+.scrub-field { touch-action: pan-y; cursor: ew-resize; -webkit-user-select: none; user-select: none; }
+.scrub-field input { pointer-events: none; }
 .target input { width: 100%; min-width: 0; background: transparent; border: 0; outline: 0; text-align: center; font-size: clamp(22px, calc(var(--u) * 3.3), 22px); font-weight: 800; font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; }
 .target .field span { color: var(--muted); }
 .pct-toggle.on { background: #2a2410; color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 /* RM mode: the input row becomes "1RM [N RM] = weight" */
 .pct-btn { flex: none; height: clamp(44px, calc(var(--u) * 6.6), 56px); padding: 0 6px; border-radius: 12px; background: #2a2410; color: var(--accent);
            box-shadow: inset 0 0 0 1px var(--accent); font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.pct-eq { flex: none; align-self: center; color: var(--muted); font-size: 20px; font-weight: 700; }
+/* direction arrow between the two numbers: points from the typed side to the computed one */
+.pct-dir { flex: none; width: 22px; align-self: stretch; background: none; color: var(--accent); font-size: 20px; font-weight: 800; padding: 0; }
+.pct-dir:active { opacity: .6; }
+/* the computed side of the RM row: dimmed, not editable */
+.target .computed { cursor: default; border-style: dashed; }
+.target .computed input { color: var(--muted); }
 /* the number stays vertically centred in the row; the optional '實際' note hangs below it */
 /* it is an input too: typing the N RM weight back-solves the 1RM */
 .target .pct-out { flex: 1; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center;
                    background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 0 4px; }
-.target .pct-out:focus-within { border-color: var(--accent); }
+.target .pct-out:focus-within, .target .pct-out.scrubbing { border-color: var(--accent); }
 .target.pct .pct-out input { font-size: clamp(20px, min(calc(var(--u) * 3.8), calc((min(100vw, 480px) - 278px) / 3.2)), 24px); }
 .pct-out small { position: absolute; top: calc(50% + 11px); left: 50%; transform: translateX(-50%); color: var(--accent); font-size: 11px; font-weight: 600; white-space: nowrap; }
 /* RM mode needs the width: unit moves under the result, tighter field padding */

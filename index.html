@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="style.css?v=20261005-1014">
+<link rel="stylesheet" href="style.css?v=20261005-1049">
 </head>
 <body>
 <div class="shell">
@@ -49,14 +49,14 @@
   <section class="panel">
     <div class="target">
       <button class="step" id="minus"></button>
-      <label class="field">
+      <div class="field scrub-field" id="targetField">
         <input id="target" type="number" inputmode="decimal" min="0" placeholder="目標總重">
         <span id="targetUnit">kg</span>
-      </label>
+      </div>
       <button class="step" id="plus"></button>
       <button class="pct-btn" id="pctBtn" hidden>5RM ▾</button>
-      <span class="pct-eq" id="pctEq" hidden>=</span>
-      <div class="pct-out" id="pctOut" hidden><input id="pctWeight" type="number" inputmode="decimal" min="0" placeholder="—" aria-label="RM 重量"><small id="pctActual"></small></div>
+      <button class="pct-dir" id="pctDir" hidden aria-label="切換計算方向">→</button>
+      <div class="pct-out scrub-field" id="pctOut" hidden><input id="pctWeight" type="number" inputmode="decimal" min="0" placeholder="—" aria-label="RM 重量"><small id="pctActual"></small></div>
       <button class="step pct-toggle" id="pctToggle" aria-label="依 RM 計算">RM</button>
     </div>
     <div class="result" id="result"></div>
@@ -172,9 +172,9 @@
 
 </div>
 
-<script src="app.js?v=20261005-1014"></script>
-<script src="log.js?v=20261005-1014"></script>
-<script src="tour.js?v=20261005-1014"></script>
-<script src="update.js?v=20261005-1014"></script>
+<script src="app.js?v=20261005-1049"></script>
+<script src="log.js?v=20261005-1049"></script>
+<script src="tour.js?v=20261005-1049"></script>
+<script src="update.js?v=20261005-1049"></script>
 </body>
 </html>

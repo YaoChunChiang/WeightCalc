@@ -41,6 +41,7 @@ const defaults = () => ({
   target: { kg: '', lb: '' },
   pctOn: false,                     // RM mode: target = entered 1RM × RM_PCT[rm]%
   rm: 5,
+  rmDir: 'fwd',                     // RM mode: 'fwd' = 1RM is typed, 'back' = the N RM weight is typed (1RM computed)
   // with a target set, the bar is re-planned on every render: locked plates stay on at exactly
   // their count ({w, n}, in lock order), excluded (blocked) weights are never used, the solver fills the rest
   lock: { kg: [], lb: [] },
@@ -154,7 +155,7 @@ function solve(perSide) {
 
 function solveTarget() {
   const base = parseFloat(state.target[U()]);
-  if (!isFinite(base)) return { error: state.pctOn ? '輸入 1RM' : '輸入想要的總重量' };
+  if (!isFinite(base)) return { error: !state.pctOn ? '輸入想要的總重量' : state.rmDir === 'back' ? '輸入 N RM 的重量' : '輸入 1RM' };
   return solveFor(base, state.pctOn ? rmWeight(base, state.rm) : base);
 }
 // locked plates always stay on; the solver only fills what is left of each side
@@ -207,6 +208,9 @@ const rmWeight = (base, rm) => rmWeights(base)[rm];
 // 1RM back-solved from an N RM weight, to 0.1: close enough that rmWeight() gives a whole-number
 // weight straight back (5RM 81 → 93.1 → 81; rounding to 93 would snap to 80)
 const oneRmFrom = (w, rm) => Math.round(w * 100 / RM_PCT[rm] * 10) / 10;
+// the right-hand N RM weight; setting it back-solves the 1RM (state.target stays the only stored value)
+const rmRight = () => { const b = parseFloat(state.target[U()]); return isFinite(b) ? rmWeight(b, state.rm) : NaN; };
+const setRmRight = w => { state.target[U()] = isFinite(w) && w > 0 ? fmt(Math.min(MAX[U()], oneRmFrom(w, state.rm))) : ''; };
 
 /* ---------- rendering ---------- */
 function chipHTML(w, extra = '') {
@@ -275,7 +279,15 @@ function renderControls() {
   $('pctToggle').classList.toggle('on', state.pctOn);
   // RM mode turns the input row into "1RM × N RM = weight"; the RM is picked in #pctSheet
   $('minus').hidden = $('plus').hidden = state.pctOn;
-  $('pctBtn').hidden = $('pctEq').hidden = $('pctOut').hidden = !state.pctOn;
+  $('pctBtn').hidden = $('pctDir').hidden = $('pctOut').hidden = !state.pctOn;
+  // the side being computed is read-only and dimmed; the arrow points from the typed side to it
+  const back = state.pctOn && state.rmDir === 'back';
+  $('pctDir').textContent = back ? '←' : '→';
+  $('target').readOnly = back;
+  $('pctWeight').readOnly = !back;
+  $('targetField').classList.toggle('computed', back);
+  $('pctOut').classList.toggle('computed', !back);
+  $('pctWeight').placeholder = back ? '重量' : '—';
   $('pctBtn').textContent = `${state.rm}RM ▾`;
   document.querySelector('.panel .target').classList.toggle('pct', state.pctOn);
   if (document.activeElement !== $('target')) $('target').value = state.target[u];
@@ -321,15 +333,19 @@ function renderResult() {
   else el.innerHTML = inexact && !state.pctOn ? `<span class="warn">最接近 ${fmt(r.total)} ${U()}（差 ${fmt(r.diff)}）</span>` : '';
 }
 
-// RM sheet: every RM with its % and the weight it gives for the entered 1RM
+// RM sheet: every RM with its % and the weight it gives for the entered 1RM.
+// 'back' direction: the 1RM each RM would give for the typed weight instead
 function renderRmList() {
   const base = parseFloat(state.target[U()]), ok = isFinite(base);
-  $('pctSheetCalc').textContent = ok ? `1RM ${fmt(base)} ${U()}` : '先輸入 1RM';
+  const back = state.rmDir === 'back', right = rmRight();
+  $('pctSheetCalc').textContent = !ok ? (back ? '先輸入重量' : '先輸入 1RM') : back ? `重量 ${fmt(right)} ${U()}` : `1RM ${fmt(base)} ${U()}`;
   const ws = ok ? rmWeights(base) : {};
   $('rmList').innerHTML = Object.keys(RM_PCT).map(n => {
     const p = RM_PCT[n];
     let w = '—', actual = '';
-    if (ok) {
+    if (ok && back) {
+      w = `<small class="u">1RM</small> ${fmt(oneRmFrom(right, n))} <small class="u">${U()}</small>`;
+    } else if (ok) {
       const t = ws[n], r = solveFor(base, t, []);
       w = `${round2(t)} <small class="u">${U()}</small>`;
       if (!r.error && Math.abs(r.diff) > 1e-9) actual = `<small>實際 ${fmt(r.total)}</small>`;
@@ -483,25 +499,83 @@ $('pctBtn').addEventListener('click', () => showSheet($('pctSheet'), true));
 $('pctDone').addEventListener('click', () => showSheet(null, false));
 $('rmList').addEventListener('click', e => {
   const b = e.target.closest('[data-rm]');
-  if (b) { state.rm = +b.dataset.rm; buzz(); render(); showSheet(null, false); }
+  if (!b) return;
+  // 'back': the typed N RM weight stays put and the 1RM is re-solved for the new RM
+  const w = rmRight();
+  state.rm = +b.dataset.rm;
+  if (state.rmDir === 'back') setRmRight(w);
+  buzz(); render(); showSheet(null, false);
 });
 $('target').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
 // RM mode: typing the N RM weight back-solves the 1RM
 $('pctWeight').addEventListener('input', e => {
-  const v = parseFloat(capInput(e.target));
-  state.target[U()] = isFinite(v) && v > 0 ? fmt(Math.min(MAX[U()], oneRmFrom(v, state.rm))) : '';
+  setRmRight(parseFloat(capInput(e.target)));
   render();
 });
+$('pctDir').addEventListener('click', () => { state.rmDir = state.rmDir === 'back' ? 'fwd' : 'back'; buzz(); render(); });
 $('pctWeight').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
 $('pctWeight').addEventListener('blur', () => renderResult());
-function nudge(d) {
+// one step of d (±1) from v; big moves to the next multiple of STEP instead
+const stepFrom = (v, d, big) =>
+  big ? (d > 0 ? Math.floor(v / STEP + 1e-9) + 1 : Math.ceil(v / STEP - 1e-9) - 1) * STEP : v + d;
+
+/* swipe a number field left/right to change it: slow = onStep(±1, false), fast = onStep(±1, true).
+   A tap on a .scrub-arrow is a slow step; any other tap focuses the input to type. Shared with log.js. */
+const SCRUB_START = 8, SCRUB_PX = 14, FAST = 0.8;   // px, px per step, px/ms
+function scrub(box, onStep) {
+  const input = box.querySelector('input');
+  let g = null;
+  box.addEventListener('pointerdown', e => {
+    if (e.button || input.readOnly) return;   // the computed side of the RM row can't be changed
+    g = { x0: e.clientX, x: e.clientX, t: e.timeStamp, acc: 0, speed: 0, on: false, arrow: e.target.closest('.scrub-arrow') };
+    box.setPointerCapture(e.pointerId);
+  });
+  box.addEventListener('pointermove', e => {
+    if (!g) return;
+    const dx = e.clientX - g.x, dt = Math.max(1, e.timeStamp - g.t);
+    g.x = e.clientX; g.t = e.timeStamp;
+    if (!g.on) {
+      if (Math.abs(e.clientX - g.x0) < SCRUB_START) return;
+      g.on = true;
+      input.blur();
+      box.classList.add('scrubbing');
+    }
+    g.speed = g.speed * 0.6 + Math.abs(dx) / dt * 0.4;
+    g.acc += dx;
+    while (Math.abs(g.acc) >= SCRUB_PX) {
+      const d = Math.sign(g.acc);
+      g.acc -= d * SCRUB_PX;
+      onStep(d, g.speed > FAST);
+    }
+  });
+  const end = e => {
+    if (!g) return;
+    const tap = !g.on && e.type === 'pointerup', arrow = g.arrow;
+    g = null;
+    box.classList.remove('scrubbing');
+    if (!tap) return;
+    if (arrow) onStep(+arrow.dataset.d, false);
+    else input.focus();
+  };
+  box.addEventListener('pointerup', end);
+  box.addEventListener('pointercancel', end);
+}
+
+// set the target from its current value (or the bar when empty)
+function setTarget(fn) {
   const cur = parseFloat(state.target[U()]);
   const base = isFinite(cur) ? cur : barWeight();
-  state.target[U()] = fmt(Math.min(MAX[U()], Math.max(0, base + d * STEP)));
+  state.target[U()] = fmt(Math.min(MAX[U()], Math.max(0, fn(base))));
   buzz(); render();
 }
-$('minus').addEventListener('click', () => nudge(-1));
-$('plus').addEventListener('click', () => nudge(1));
+$('minus').addEventListener('click', () => setTarget(v => v - STEP));
+$('plus').addEventListener('click', () => setTarget(v => v + STEP));
+scrub($('targetField'), (d, big) => setTarget(v => stepFrom(v, d, big)));
+scrub($('pctOut'), (d, big) => {
+  const w = rmRight();
+  setRmRight(Math.min(MAX[U()], stepFrom(isFinite(w) ? w : barWeight(), d, big)));
+  buzz(); render();
+});
 
 // bottom sheets (shared with log.js)
 function showSheet(el, open) {

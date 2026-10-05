@@ -6,12 +6,13 @@ const TOUR_KEY = 'barbell-tour-v1';
 const STEPS = [
   { sel: '#page-calc .total', text: '這裡是總重：槓 ＋ 兩邊槓片' },
   { sel: '#page-calc .row', text: '選槓的重量：15／20，或輸入自訂重量' },
-  { sel: '#page-calc .target', mode: 'normal', text: '輸入目標總重，自動算出要掛哪些槓片' },
+  { sel: '#page-calc .target', mode: 'normal', text: '輸入目標總重，自動算出要掛哪些槓片。<br>不想打字：在數字上左右滑動，慢滑 ±1、快滑 ±5' },
   { sel: '#pctToggle', mode: 'normal', text: '按 RM 切換到 RM 模式，用 1RM 算訓練重量' },
   { sel: '#page-calc .target .field', mode: 'rm', text: '先輸入你的 1RM（最多能做一下的重量）' },
   { sel: '#pctBtn', mode: 'rm', text: '選要做幾下（1～15RM）' },
   { sel: '#pctOut', mode: 'rm', text: '算出的重量會調成掛得出來的數字。每個 RM 的重量都不同' },
-  { sel: '#pctOut', mode: 'rm', text: '也可以反過來：直接輸入重量，回推 1RM' },
+  { sel: '#pctDir', mode: 'rm', text: '點箭頭切換方向：<br>→ 用 1RM 算重量<br>← 輸入重量回推 1RM（換 RM 時重量不變）' },
+  { sel: '#page-calc .target', mode: 'rm', text: '箭頭指向的那格是算出來的；另一格可以輸入，也能左右滑動調整' },
   { sel: '#plateBtns', mode: 'normal', text: '沒有設定目標重量時：點槓片加上槓鈴。<br>有目標重量時：點一下可封鎖槓片，長按鎖定' },
   { sel: '#page-calc .actions', mode: 'normal', text: '隨時可以復原，或全部清空' },
 ];
