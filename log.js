@@ -318,11 +318,21 @@ $('logList').addEventListener('click', e => {
   }
   const row = e.target.closest('.set-row');
   if (row) {
-    const k = row.dataset.key;
-    expanded.has(k) ? expanded.delete(k) : expanded.add(k);
+    const k = row.dataset.key, opening = !expanded.has(k);
+    opening ? expanded.add(k) : expanded.delete(k);
     renderList();
+    if (opening) {
+      const r = [...document.querySelectorAll('#logList .set-row')].find(r => r.dataset.key === k);
+      if (r) revealBottom(r.closest('.set-group'));
+    }
   }
 });
+// scroll the list just enough to show the bottom of an expanded group
+function revealBottom(el) {
+  const list = $('logList');
+  const over = el.getBoundingClientRect().bottom - list.getBoundingClientRect().bottom;
+  if (over > 0) list.scrollBy({ top: over + 6, behavior: 'smooth' });   // 6 = .set-group margin-bottom
+}
 
 $('logClear').addEventListener('click', () => {
   const b = $('logClear');
