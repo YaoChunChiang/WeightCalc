@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="style.css?v=20261002-1325">
+<link rel="stylesheet" href="style.css?v=20261005-1010">
 </head>
 <body>
 <div class="shell">
@@ -117,22 +117,23 @@
 
     <div class="num-row">
       <span class="num-label">重量</span>
-      <button class="num-step" data-field="w" data-d="-1">−</button>
-      <label class="num-field">
+      <div class="num-field" data-field="w">
+        <button class="scrub-arrow" data-d="-1" aria-label="減 1">◀</button>
         <input id="logW" type="number" inputmode="decimal" min="0" placeholder="0">
         <span id="logUnit">kg</span>
-      </label>
-      <button class="num-step" data-field="w" data-d="1">+</button>
+        <button class="scrub-arrow" data-d="1" aria-label="加 1">▶</button>
+      </div>
     </div>
     <div class="num-row">
       <span class="num-label">次數</span>
-      <button class="num-step" data-field="reps" data-d="-1">−</button>
-      <label class="num-field">
+      <div class="num-field" data-field="reps">
+        <button class="scrub-arrow" data-d="-1" aria-label="減 1">◀</button>
         <input id="logReps" type="number" inputmode="numeric" min="1" placeholder="0">
         <span>下</span>
-      </label>
-      <button class="num-step" data-field="reps" data-d="1">+</button>
+        <button class="scrub-arrow" data-d="1" aria-label="加 1">▶</button>
+      </div>
     </div>
+    <div class="scrub-hint">左右滑動數字調整：慢滑 ±1、快滑 ±5，點數字可輸入</div>
     <button class="btn primary big" id="logSet">✓ 記錄一組</button>
   </section>
 </main>
@@ -171,9 +172,9 @@
 
 </div>
 
-<script src="app.js?v=20261002-1325"></script>
-<script src="log.js?v=20261002-1325"></script>
-<script src="tour.js?v=20261002-1325"></script>
-<script src="update.js?v=20261002-1325"></script>
+<script src="app.js?v=20261005-1010"></script>
+<script src="log.js?v=20261005-1010"></script>
+<script src="tour.js?v=20261005-1010"></script>
+<script src="update.js?v=20261005-1010"></script>
 </body>
 </html>

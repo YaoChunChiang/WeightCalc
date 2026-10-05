@@ -201,11 +201,12 @@ header h1 { font-size: 18px; margin: 0; flex: 1; min-width: 0; letter-spacing: .
 
 .num-row { display: flex; align-items: center; gap: 8px; }
 .num-label { color: var(--muted); font-size: 14px; width: 32px; flex: none; }
-.num-step { width: 52px; height: clamp(44px, calc(var(--u) * 6), 52px); border-radius: 12px; background: var(--card-2); font-size: 24px; font-weight: 700; flex: none; }
-.num-step:active { background: var(--line); }
-.num-field { flex: 1; min-width: 0; height: clamp(44px, calc(var(--u) * 6), 52px); display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 0 10px; }
-.num-field:focus-within { border-color: var(--accent); }
-.num-field input { width: 100%; min-width: 0; background: transparent; border: 0; outline: 0; text-align: center; font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; }
+.num-field { flex: 1; min-width: 0; height: clamp(44px, calc(var(--u) * 6), 52px); display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 0 4px; touch-action: pan-y; cursor: ew-resize; -webkit-user-select: none; user-select: none; }
+.num-field:focus-within, .num-field.scrubbing { border-color: var(--accent); }
+.num-field input { width: 100%; min-width: 0; background: transparent; border: 0; outline: 0; text-align: center; font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; pointer-events: none; }
+.scrub-arrow { width: 40px; height: 100%; flex: none; background: none; color: var(--muted); font-size: 14px; }
+.scrub-arrow:active { color: var(--accent); }
+.scrub-hint { color: var(--muted); font-size: 12px; text-align: center; margin-top: -4px; }
 .num-field span { color: var(--muted); flex: none; }
 
 .timer-head, .log-head { display: flex; align-items: center; gap: 8px; }

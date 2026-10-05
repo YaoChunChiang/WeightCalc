@@ -150,12 +150,58 @@ $('logReps').addEventListener('input', e => {
   if (parseFloat(e.target.value) > MAX_REPS) { e.target.value = MAX_REPS; toast(`上限 ${MAX_REPS} 下`); }
   cur().reps = e.target.value; saveLog();
 });
-document.querySelectorAll('.num-step').forEach(b => b.addEventListener('click', () => {
-  const f = b.dataset.field, d = +b.dataset.d;
+// one step of d (±1); big moves weight to the next multiple of STEP instead
+function nudge(f, d, big) {
   const v = parseFloat(cur()[f]) || 0;
-  cur()[f] = f === 'w' ? fmt(Math.min(MAX[U()], Math.max(0, v + d * STEP))) : String(Math.min(MAX_REPS, Math.max(1, Math.round(v) + d)));
+  if (f === 'w') {
+    const n = big ? (d > 0 ? Math.floor(v / STEP + 1e-9) + 1 : Math.ceil(v / STEP - 1e-9) - 1) * STEP : v + d;
+    cur()[f] = fmt(Math.min(MAX[U()], Math.max(0, n)));
+  } else {
+    cur()[f] = String(Math.min(MAX_REPS, Math.max(1, Math.round(v) + d)));
+  }
   buzz(); renderLog();
-}));
+}
+
+/* swipe a number left/right to change it: slow = ±1, fast = ±STEP (weight only); a tap types */
+const SCRUB_START = 8, SCRUB_PX = 14, FAST = 0.8;   // px, px per step, px/ms
+document.querySelectorAll('.num-field').forEach(box => {
+  const f = box.dataset.field, input = box.querySelector('input');
+  let g = null;
+  box.addEventListener('pointerdown', e => {
+    if (e.button) return;
+    g = { x0: e.clientX, x: e.clientX, t: e.timeStamp, acc: 0, speed: 0, on: false, arrow: e.target.closest('.scrub-arrow') };
+    box.setPointerCapture(e.pointerId);
+  });
+  box.addEventListener('pointermove', e => {
+    if (!g) return;
+    const dx = e.clientX - g.x, dt = Math.max(1, e.timeStamp - g.t);
+    g.x = e.clientX; g.t = e.timeStamp;
+    if (!g.on) {
+      if (Math.abs(e.clientX - g.x0) < SCRUB_START) return;
+      g.on = true;
+      input.blur();
+      box.classList.add('scrubbing');
+    }
+    g.speed = g.speed * 0.6 + Math.abs(dx) / dt * 0.4;
+    g.acc += dx;
+    while (Math.abs(g.acc) >= SCRUB_PX) {
+      const d = Math.sign(g.acc);
+      g.acc -= d * SCRUB_PX;
+      nudge(f, d, f === 'w' && g.speed > FAST);
+    }
+  });
+  const end = e => {
+    if (!g) return;
+    const tap = !g.on && e.type === 'pointerup', arrow = g.arrow;
+    g = null;
+    box.classList.remove('scrubbing');
+    if (!tap) return;
+    if (arrow) nudge(f, +arrow.dataset.d, false);
+    else input.focus();
+  };
+  box.addEventListener('pointerup', end);
+  box.addEventListener('pointercancel', end);
+});
 
 $('logSet').addEventListener('click', () => {
   const w = parseFloat(cur().w), reps = parseInt(cur().reps, 10);
